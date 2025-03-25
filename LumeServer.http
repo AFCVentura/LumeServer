@@ -1,0 +1,8 @@
+// Esse arquivo serve para testar requisições
+
+@LumeServer_HostAddress = http://localhost:5249
+
+GET {{LumeServer_HostAddress}}/
+Accept: application/json
+
+###
