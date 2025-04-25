@@ -1,4 +1,8 @@
 // Namespaces são basicamente o caminho dessa classe dentro do projeto, não precisa ser exatamente o mesmo caminho das pastas, mas é mais fácil adotar esse padrão.
+using LumeServer.Data;
+using LumeServer.Services;
+using Microsoft.EntityFrameworkCore;
+
 namespace LumeServer
 {
     // A classe Program é o entrypoint da aplicação, é aqui que configurações de serviços e afins são feitas.
@@ -12,6 +16,42 @@ namespace LumeServer
 
             // Aqui estamos dizendo que essa aplicação vai usar Controllers (porque tem como fazer sem eles também).
             builder.Services.AddControllers();
+
+            // Carrega string de conexão do appsettings.json ou variáveis de ambiente
+            var connectionString =
+                builder.Configuration.GetConnectionString("CONNECTION_STRING");
+
+            // Aqui estamos registrando o UserService com injeção de dependência.
+            builder.Services.AddScoped<UserService>();
+
+            // Registra o DbContext com injeção de dependência
+            builder.Services.AddDbContext<LumeDataContext>(options =>
+            {
+                // Configura o serviço DataContext que será usado para a interação com o banco de dados.
+                // O DataContext é uma classe que representa uma sessão com o banco de dados e permite a 
+                // execução de consultas e operações de CRUD.
+
+                options.UseMySql(
+                    // Aqui, estamos dizendo ao DataContext para usar o MySQL como o provedor de banco de dados.
+                    builder
+                        .Configuration
+                        // O método `Configuration` acessa as configurações da aplicação.
+                        .GetConnectionString("CONNECTION_STRING"),
+                    // Recupera a string de conexão com o banco de dados a partir do arquivo de configuração.
+                    // Neste caso, a string é identificada pelo nome "CONNECTION_STRING".
+
+                    ServerVersion
+                        .AutoDetect(
+                            // O método `AutoDetect` automaticamente detecta a versão do servidor MySQL
+                            // para garantir que a aplicação se conecte corretamente à versão compatível.
+                            builder
+                                .Configuration
+                                // Novamente, acessa a configuração da aplicação.
+                                .GetConnectionString("CONNECTION_STRING")
+                        // Obtém novamente a mesma string de conexão, que será usada para detectar a versão do MySQL.
+                        )
+                );
+            });
 
             // Aqui estamos adicionando o serviço de documentação da API com Swagger, podemos deixar por enquanto.
             builder.Services.AddEndpointsApiExplorer();
