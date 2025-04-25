@@ -2,7 +2,7 @@
 
 @LumeServer_HostAddress = http://localhost:5249
 
-GET {{LumeServer_HostAddress}}/
+GET {{LumeServer_HostAddress}}/user
 Accept: application/json
 
 ###
