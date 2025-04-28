@@ -11,8 +11,8 @@ namespace LumeServer.Services
         // Ele vai usar o LumeDataContext para fazer isso.
         // O LumeDataContext é o contexto do banco de dados, ele é responsável por fazer a comunicação com o banco de dados.
         // Aqui vamos criar o construtor do UserService, que vai receber o LumeDataContext como parâmetro.
-        private readonly LumeDataContext _context;
-        public UserService(LumeDataContext context)
+        private readonly UserDataContext _context;
+        public UserService(UserDataContext context)
         {
             _context = context;
         }
