@@ -65,8 +65,6 @@ namespace LumeServer
                 );
             });
 
-            builder.Services.AddDbContext<UserDataContext>();
-
             // Aqui estamos registrando o serviço de autenticação com JWT.
             builder.Services.AddAuthorization();
 
