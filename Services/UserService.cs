@@ -1,5 +1,6 @@
 ﻿using LumeServer.Data;
 using LumeServer.Models.User;
+using Microsoft.AspNetCore.Identity;
 
 namespace LumeServer.Services
 {
@@ -12,9 +13,18 @@ namespace LumeServer.Services
         // O LumeDataContext é o contexto do banco de dados, ele é responsável por fazer a comunicação com o banco de dados.
         // Aqui vamos criar o construtor do UserService, que vai receber o LumeDataContext como parâmetro.
         private readonly LumeDataContext _context;
-        public UserService(LumeDataContext context)
+        private readonly SignInManager<User> _signInManager;
+
+        public UserService(LumeDataContext context, SignInManager<User> signInManager)
         {
             _context = context;
+            _signInManager = signInManager;
+        }
+
+        // Função de logout
+        public async Task LogoutAsync()
+        {
+            await _signInManager.SignOutAsync();
         }
 
         // Exemplo de método que manipula o banco de dados
