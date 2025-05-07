@@ -1,5 +1,7 @@
 ﻿using LumeServer.Models.User;
 using LumeServer.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LumeServer.Controllers
@@ -19,9 +21,18 @@ namespace LumeServer.Controllers
         // Exemplo de action (método que recebe uma requisição)
         // Esse método lida com a url /api/user
         [HttpGet]
+        [Authorize] // Exige que o usuário esteja autenticado
         public List<User> GetAll()
         {
             return _service.GetAllUsers();
+        }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            await _service.LogoutAsync();
+            return Ok(new { message = "Logout efetuado com sucesso." });
         }
     }
 }

@@ -1,5 +1,6 @@
 // Namespaces são basicamente o caminho dessa classe dentro do projeto, não precisa ser exatamente o mesmo caminho das pastas, mas é mais fácil adotar esse padrão.
 using LumeServer.Data;
+using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +14,17 @@ namespace LumeServer
         {
             // O builder é o objeto que builda a aplicação, ele é responsável por adicionar serviços, configurar a aplicação e afins.
             var builder = WebApplication.CreateBuilder(args);
+
+            // Configuração de CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAll", policy =>
+                {
+                    policy.AllowAnyOrigin()
+                          .AllowAnyMethod()
+                          .AllowAnyHeader();
+                });
+            });
 
             // Aqui estamos dizendo que essa aplicação vai usar Controllers (porque tem como fazer sem eles também).
             builder.Services.AddControllers();
@@ -53,12 +65,25 @@ namespace LumeServer
                 );
             });
 
+            // Aqui estamos registrando o serviço de autenticação com JWT.
+            builder.Services.AddAuthorization();
+
+            // Aqui estamos registrando o serviço de autenticação com JWT.
+            builder.Services
+                .AddIdentityApiEndpoints<User>()
+                .AddEntityFrameworkStores<LumeDataContext>();
+
             // Aqui estamos adicionando o serviço de documentação da API com Swagger, podemos deixar por enquanto.
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             // Aqui estamos construindo a aplicação depois de fazer todas as configurações necessárias.
             var app = builder.Build();
+
+            app.UseCors("AllowAll");
+
+            // Aqui estamos aplicando as migrações pendentes do banco de dados.
+            app.MapIdentityApi<User>();
 
             // Aqui nesse 'if' vai tudo que é necessário configurar apenas quando estamos em ambiente de desenvolvimento.
             if (app.Environment.IsDevelopment())
