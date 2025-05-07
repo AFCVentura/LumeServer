@@ -1,10 +1,11 @@
 ﻿using LumeServer.Models.User;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 
 namespace LumeServer.Data
 {
-    public class LumeDataContext : DbContext
+    public class LumeDataContext : IdentityDbContext<User>
     {
         public DbSet<User> Users { get; set; }
 

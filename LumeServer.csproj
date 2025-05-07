@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
@@ -7,6 +7,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="Migrations\20250425175650_FirstTestMigration.cs" />
+	  <Compile Remove="Migrations\20250425175650_FirstTestMigration.Designer.cs" />
+	  <Compile Remove="Migrations\LumeDataContextModelSnapshot.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.15" />
 		<PackageReference Include="microsoft.entityframeworkcore" Version="8.0.15" />
 		<PackageReference Include="microsoft.entityframeworkcore.design" Version="8.0.15">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -16,4 +23,8 @@
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<Folder Include="LumeAI\" />
+		<Folder Include="Migrations\" />
+	</ItemGroup>
 </Project>
