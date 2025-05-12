@@ -27,5 +27,4 @@
 		<Folder Include="LumeAI\" />
 		<Folder Include="Migrations\" />
 	</ItemGroup>
-
 </Project>

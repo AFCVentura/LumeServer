@@ -1,4 +1,5 @@
 ﻿using LumeServer.Models.Movie;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 
