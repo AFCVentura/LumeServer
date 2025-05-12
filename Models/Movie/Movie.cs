@@ -1,8 +1,10 @@
-﻿namespace LumeServer.Models.Movie
+﻿using LumeServer.Models.User;
+
+namespace LumeServer.Models.Movie
 {
     public class Movie
     {
-        public string Id { get; set; }
+        public int Id { get; set; }
         public string? Title { get; set; }
         public float VoteAverage { get; set; }
         public int VoteCount { get; set; }
@@ -22,11 +24,15 @@
         public string PosterPath { get; set; }
         public string? Tagline { get; set; }
         public int ClusterId { get; set; }
+        public Cluster Cluster { get; set; }
 
         public ICollection<MovieGenre> MovieGenres { get; set; }
         public ICollection<MovieKeyword> MovieKeywords { get; set; }
         public ICollection<MovieProductionCompany> MovieProductionCompanies { get; set; }
         public ICollection<MovieProductionCountry> MovieProductionCountries { get; set; }
         public ICollection<MovieSpokenLanguage> MovieSpokenLanguages { get; set; }
+        public ICollection<WatchedList> WatchedList { get; set; }
+        public ICollection<WishList> WishList { get; set; }
     }
 }
+
