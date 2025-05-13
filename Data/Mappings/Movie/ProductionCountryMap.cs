@@ -18,6 +18,11 @@ namespace LumeServer.Data.Mappings.Movie
                    .WithOne(mk => mk.ProductionCountry)
                    .HasForeignKey(mk => mk.ProductionCountryId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(k => k.ExtraAnswerProductionCountries)
+                .WithOne(mk => mk.ProductionCountry)
+                .HasForeignKey(mk => mk.ProductionCountryId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
