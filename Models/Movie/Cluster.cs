@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using LumeServer.Models.User;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json;
 
 namespace LumeServer.Models.Movie
@@ -17,6 +18,10 @@ namespace LumeServer.Models.Movie
             get => JsonSerializer.Deserialize<float[]>(CentroidVectorJson);
             set => CentroidVectorJson = JsonSerializer.Serialize(value);
         }
+
+        public ICollection<UserDailyProfileCluster> UserDailyProfileClusters { get; set; }
+        public ICollection<UserGeneralProfileCluster> UserGeneralProfileClusters { get; set; }
+
 
         public Cluster()
         {
