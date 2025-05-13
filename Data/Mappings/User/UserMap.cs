@@ -27,6 +27,19 @@ namespace LumeServer.Data.Mappings.User
             builder.HasMany(u => u.WatchedList)
                 .WithOne(wal => wal.User)
                 .HasForeignKey(wal => wal.UserId);
+
+            builder.Property(u => u.MinVoteAverage)
+                   .HasDefaultValue(0.0f);
+            builder.Property(u => u.MaxVoteAverage)
+                   .HasDefaultValue(10.1f);
+            builder.Property(u => u.MinVoteCount)
+                   .HasDefaultValue(0);
+            builder.Property(u => u.MaxVoteCount)
+                   .HasDefaultValue(1000000);
+            builder.Property(u => u.MinYear)
+                   .HasDefaultValue(0);
+            builder.Property(u => u.MaxYear)
+                   .HasDefaultValue(5000);
         }
     }
 }
