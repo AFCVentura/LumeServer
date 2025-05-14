@@ -21,6 +21,4 @@ namespace LumeServer.Data.Mappings.Question
                     .OnDelete(DeleteBehavior.Cascade);
         }
     }
-    {
-    }
 }
