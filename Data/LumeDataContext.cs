@@ -1,6 +1,8 @@
 ﻿using LumeServer.Data.Mappings.Movie;
+using LumeServer.Data.Mappings.Question;
 using LumeServer.Data.Mappings.User;
 using LumeServer.Models.Movie;
+using LumeServer.Models.Question;
 using LumeServer.Models.User;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +33,18 @@ namespace LumeServer.Data
         public DbSet<UserDailyProfile> UserDailyProfiles { get; set; }
         public DbSet<UserDailyProfileCluster> UserDailyProfileClusters { get; set; }
         public DbSet<UserGeneralProfileCluster> UserGeneralProfileClusters { get; set; }
+
+        // Questões
+        public DbSet<ExtraQuestion> ExtraQuestions { get; set; }
+        public DbSet<ExtraAnswer> ExtraAnswers { get; set; }
+        public DbSet<ExtraAnswerSpokenLanguage> ExtraAnswerSpokenLanguages { get; set; }
+        public DbSet<ExtraAnswerProductionCountry> ExtraAnswerProductionCountries { get; set; }
+
+        public DbSet<ThemeQuestion> ThemeQuestions { get; set; }
+        public DbSet<ThemeAnswer> ThemeAnswers { get; set; }
+        public DbSet<ThemeAnswerGenre> ThemeAnswerGenres { get; set; }
+        public DbSet<ThemeAnswerKeyword> ThemeAnswerKeywords { get; set; }
+
         #endregion
 
         #region Mapeamentos dos modelos
@@ -51,6 +65,7 @@ namespace LumeServer.Data
             modelBuilder.ApplyConfiguration(new ProductionCountryMap());
             modelBuilder.ApplyConfiguration(new SpokenLanguageMap());
 
+
             // Usuários
             modelBuilder.ApplyConfiguration(new UserMap());
             modelBuilder.ApplyConfiguration(new WishListMap());
@@ -59,6 +74,16 @@ namespace LumeServer.Data
             modelBuilder.ApplyConfiguration(new UserDailyProfileClusterMap());
             modelBuilder.ApplyConfiguration(new UserGeneralProfileClusterMap());
 
+            // Questões
+            modelBuilder.ApplyConfiguration(new ExtraQuestionMap());
+            modelBuilder.ApplyConfiguration(new ExtraAnswerMap());
+            modelBuilder.ApplyConfiguration(new ExtraAnswerSpokenLanguageMap());
+            modelBuilder.ApplyConfiguration(new ExtraAnswerProductionCountryMap());
+
+            modelBuilder.ApplyConfiguration(new ThemeQuestionMap());
+            modelBuilder.ApplyConfiguration(new ThemeAnswerMap());
+            modelBuilder.ApplyConfiguration(new ThemeAnswerGenreMap());
+            modelBuilder.ApplyConfiguration(new ThemeAnswerKeywordMap());
         }
         #endregion
 

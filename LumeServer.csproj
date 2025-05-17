@@ -7,9 +7,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Migrations\20250425175650_FirstTestMigration.cs" />
-	  <Compile Remove="Migrations\20250425175650_FirstTestMigration.Designer.cs" />
-	  <Compile Remove="Migrations\LumeDataContextModelSnapshot.cs" />
+	  <Compile Remove="Models\NewFolder\**" />
+	  <Content Remove="Models\NewFolder\**" />
+	  <EmbeddedResource Remove="Models\NewFolder\**" />
+	  <None Remove="Models\NewFolder\**" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -25,6 +26,5 @@
 
 	<ItemGroup>
 		<Folder Include="LumeAI\" />
-		<Folder Include="Migrations\" />
 	</ItemGroup>
 </Project>

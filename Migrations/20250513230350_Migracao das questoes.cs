@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LumeServer.Migrations
 {
     /// <inheritdoc />
-    public partial class UserModels : Migration
+    public partial class Migracaodasquestoes : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -40,6 +40,12 @@ namespace LumeServer.Migrations
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    MinVoteAverage = table.Column<float>(type: "float", nullable: false, defaultValue: 0f),
+                    MaxVoteAverage = table.Column<float>(type: "float", nullable: false, defaultValue: 10.1f),
+                    MinVoteCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    MaxVoteCount = table.Column<int>(type: "int", nullable: false, defaultValue: 1000000),
+                    MinYear = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    MaxYear = table.Column<int>(type: "int", nullable: false, defaultValue: 5000),
                     UserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     NormalizedUserName = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
@@ -81,6 +87,24 @@ namespace LumeServer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Clusters", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ExtraQuestions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Text = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    IsGeneralProfile = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsMultipleChoice = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    QuestionType = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExtraQuestions", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -156,6 +180,23 @@ namespace LumeServer.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SpokenLanguages", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ThemeQuestions",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Text = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    IsGeneralProfile = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsMultipleChoice = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ThemeQuestions", x => x.Id);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -294,6 +335,12 @@ namespace LumeServer.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     UserId = table.Column<string>(type: "varchar(255)", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
+                    MinVoteAverage = table.Column<float>(type: "float", nullable: false, defaultValue: 0f),
+                    MaxVoteAverage = table.Column<float>(type: "float", nullable: false, defaultValue: 10.1f),
+                    MinVoteCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    MaxVoteCount = table.Column<int>(type: "int", nullable: false, defaultValue: 1000000),
+                    MinYear = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    MaxYear = table.Column<int>(type: "int", nullable: false, defaultValue: 5000),
                     Timestamp = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     IsTheLatest = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
@@ -378,6 +425,56 @@ namespace LumeServer.Migrations
                         name: "FK_UserGeneralProfileClusters_Clusters_ClusterId",
                         column: x => x.ClusterId,
                         principalTable: "Clusters",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ExtraAnswers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Text = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    MinVoteAverage = table.Column<float>(type: "float", nullable: false),
+                    MaxVoteAverage = table.Column<float>(type: "float", nullable: false),
+                    MinVoteCount = table.Column<int>(type: "int", nullable: false),
+                    MaxVoteCount = table.Column<int>(type: "int", nullable: false),
+                    MinYear = table.Column<int>(type: "int", nullable: false),
+                    MaxYear = table.Column<int>(type: "int", nullable: false),
+                    QuestionId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExtraAnswers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ExtraAnswers_ExtraQuestions_QuestionId",
+                        column: x => x.QuestionId,
+                        principalTable: "ExtraQuestions",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ThemeAnswers",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Text = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    ThemeQuestionId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ThemeAnswers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_ThemeAnswers_ThemeQuestions_ThemeQuestionId",
+                        column: x => x.ThemeQuestionId,
+                        principalTable: "ThemeQuestions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 })
@@ -585,6 +682,106 @@ namespace LumeServer.Migrations
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
+            migrationBuilder.CreateTable(
+                name: "ExtraAnswerProductionCountries",
+                columns: table => new
+                {
+                    ExtraAnswerId = table.Column<int>(type: "int", nullable: false),
+                    ProductionCountryId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExtraAnswerProductionCountries", x => new { x.ExtraAnswerId, x.ProductionCountryId });
+                    table.ForeignKey(
+                        name: "FK_ExtraAnswerProductionCountries_ExtraAnswers_ExtraAnswerId",
+                        column: x => x.ExtraAnswerId,
+                        principalTable: "ExtraAnswers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ExtraAnswerProductionCountries_ProductionCountries_Productio~",
+                        column: x => x.ProductionCountryId,
+                        principalTable: "ProductionCountries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ExtraAnswerSpokenLanguages",
+                columns: table => new
+                {
+                    ExtraAnswerId = table.Column<int>(type: "int", nullable: false),
+                    SpokenLanguageId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ExtraAnswerSpokenLanguages", x => new { x.ExtraAnswerId, x.SpokenLanguageId });
+                    table.ForeignKey(
+                        name: "FK_ExtraAnswerSpokenLanguages_ExtraAnswers_ExtraAnswerId",
+                        column: x => x.ExtraAnswerId,
+                        principalTable: "ExtraAnswers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ExtraAnswerSpokenLanguages_SpokenLanguages_SpokenLanguageId",
+                        column: x => x.SpokenLanguageId,
+                        principalTable: "SpokenLanguages",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ThemeAnswerGenres",
+                columns: table => new
+                {
+                    ThemeAnswerId = table.Column<int>(type: "int", nullable: false),
+                    GenreId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ThemeAnswerGenres", x => new { x.GenreId, x.ThemeAnswerId });
+                    table.ForeignKey(
+                        name: "FK_ThemeAnswerGenres_Genres_GenreId",
+                        column: x => x.GenreId,
+                        principalTable: "Genres",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ThemeAnswerGenres_ThemeAnswers_ThemeAnswerId",
+                        column: x => x.ThemeAnswerId,
+                        principalTable: "ThemeAnswers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "ThemeAnswerKeywords",
+                columns: table => new
+                {
+                    ThemeAnswerId = table.Column<int>(type: "int", nullable: false),
+                    KeywordId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ThemeAnswerKeywords", x => new { x.ThemeAnswerId, x.KeywordId });
+                    table.ForeignKey(
+                        name: "FK_ThemeAnswerKeywords_Keywords_KeywordId",
+                        column: x => x.KeywordId,
+                        principalTable: "Keywords",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_ThemeAnswerKeywords_ThemeAnswers_ThemeAnswerId",
+                        column: x => x.ThemeAnswerId,
+                        principalTable: "ThemeAnswers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -623,6 +820,21 @@ namespace LumeServer.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_ExtraAnswerProductionCountries_ProductionCountryId",
+                table: "ExtraAnswerProductionCountries",
+                column: "ProductionCountryId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExtraAnswers_QuestionId",
+                table: "ExtraAnswers",
+                column: "QuestionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ExtraAnswerSpokenLanguages_SpokenLanguageId",
+                table: "ExtraAnswerSpokenLanguages",
+                column: "SpokenLanguageId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_MovieGenres_GenreId",
                 table: "MovieGenres",
                 column: "GenreId");
@@ -651,6 +863,21 @@ namespace LumeServer.Migrations
                 name: "IX_MovieSpokenLanguages_SpokenLanguageId",
                 table: "MovieSpokenLanguages",
                 column: "SpokenLanguageId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ThemeAnswerGenres_ThemeAnswerId",
+                table: "ThemeAnswerGenres",
+                column: "ThemeAnswerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ThemeAnswerKeywords_KeywordId",
+                table: "ThemeAnswerKeywords",
+                column: "KeywordId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ThemeAnswers_ThemeQuestionId",
+                table: "ThemeAnswers",
+                column: "ThemeQuestionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserDailyProfileClusters_ClusterId",
@@ -697,6 +924,12 @@ namespace LumeServer.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "ExtraAnswerProductionCountries");
+
+            migrationBuilder.DropTable(
+                name: "ExtraAnswerSpokenLanguages");
+
+            migrationBuilder.DropTable(
                 name: "MovieGenres");
 
             migrationBuilder.DropTable(
@@ -710,6 +943,12 @@ namespace LumeServer.Migrations
 
             migrationBuilder.DropTable(
                 name: "MovieSpokenLanguages");
+
+            migrationBuilder.DropTable(
+                name: "ThemeAnswerGenres");
+
+            migrationBuilder.DropTable(
+                name: "ThemeAnswerKeywords");
 
             migrationBuilder.DropTable(
                 name: "UserDailyProfileClusters");
@@ -727,10 +966,7 @@ namespace LumeServer.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Genres");
-
-            migrationBuilder.DropTable(
-                name: "Keywords");
+                name: "ExtraAnswers");
 
             migrationBuilder.DropTable(
                 name: "ProductionCompanies");
@@ -742,10 +978,25 @@ namespace LumeServer.Migrations
                 name: "SpokenLanguages");
 
             migrationBuilder.DropTable(
+                name: "Genres");
+
+            migrationBuilder.DropTable(
+                name: "Keywords");
+
+            migrationBuilder.DropTable(
+                name: "ThemeAnswers");
+
+            migrationBuilder.DropTable(
                 name: "UserDailyProfiles");
 
             migrationBuilder.DropTable(
                 name: "Movies");
+
+            migrationBuilder.DropTable(
+                name: "ExtraQuestions");
+
+            migrationBuilder.DropTable(
+                name: "ThemeQuestions");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

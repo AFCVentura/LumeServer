@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LumeServer.Migrations
 {
     [DbContext(typeof(LumeDataContext))]
-    [Migration("20250512184550_UserModels")]
-    partial class UserModels
+    [Migration("20250513230350_Migracao das questoes")]
+    partial class Migracaodasquestoes
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -281,6 +281,177 @@ namespace LumeServer.Migrations
                     b.ToTable("SpokenLanguages");
                 });
 
+            modelBuilder.Entity("LumeServer.Models.Question.ExtraAnswer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<float>("MaxVoteAverage")
+                        .HasColumnType("float");
+
+                    b.Property<int>("MaxVoteCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MaxYear")
+                        .HasColumnType("int");
+
+                    b.Property<float>("MinVoteAverage")
+                        .HasColumnType("float");
+
+                    b.Property<int>("MinVoteCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MinYear")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QuestionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("QuestionId");
+
+                    b.ToTable("ExtraAnswers");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ExtraAnswerProductionCountry", b =>
+                {
+                    b.Property<int>("ExtraAnswerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductionCountryId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ExtraAnswerId", "ProductionCountryId");
+
+                    b.HasIndex("ProductionCountryId");
+
+                    b.ToTable("ExtraAnswerProductionCountries");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ExtraAnswerSpokenLanguage", b =>
+                {
+                    b.Property<int>("ExtraAnswerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SpokenLanguageId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ExtraAnswerId", "SpokenLanguageId");
+
+                    b.HasIndex("SpokenLanguageId");
+
+                    b.ToTable("ExtraAnswerSpokenLanguages");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ExtraQuestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsGeneralProfile")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsMultipleChoice")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<int>("QuestionType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ExtraQuestions");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ThemeAnswer", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("ThemeQuestionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ThemeQuestionId");
+
+                    b.ToTable("ThemeAnswers");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ThemeAnswerGenre", b =>
+                {
+                    b.Property<int>("GenreId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ThemeAnswerId")
+                        .HasColumnType("int");
+
+                    b.HasKey("GenreId", "ThemeAnswerId");
+
+                    b.HasIndex("ThemeAnswerId");
+
+                    b.ToTable("ThemeAnswerGenres");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ThemeAnswerKeyword", b =>
+                {
+                    b.Property<int>("ThemeAnswerId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("KeywordId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ThemeAnswerId", "KeywordId");
+
+                    b.HasIndex("KeywordId");
+
+                    b.ToTable("ThemeAnswerKeywords");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ThemeQuestion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsGeneralProfile")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsMultipleChoice")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ThemeQuestions");
+                });
+
             modelBuilder.Entity("LumeServer.Models.User.User", b =>
                 {
                     b.Property<string>("Id")
@@ -305,6 +476,36 @@ namespace LumeServer.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetime(6)");
+
+                    b.Property<float>("MaxVoteAverage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(10.1f);
+
+                    b.Property<int>("MaxVoteCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1000000);
+
+                    b.Property<int>("MaxYear")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(5000);
+
+                    b.Property<float>("MinVoteAverage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(0f);
+
+                    b.Property<int>("MinVoteCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("MinYear")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -355,6 +556,36 @@ namespace LumeServer.Migrations
 
                     b.Property<bool>("IsTheLatest")
                         .HasColumnType("tinyint(1)");
+
+                    b.Property<float>("MaxVoteAverage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(10.1f);
+
+                    b.Property<int>("MaxVoteCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1000000);
+
+                    b.Property<int>("MaxYear")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(5000);
+
+                    b.Property<float>("MinVoteAverage")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(0f);
+
+                    b.Property<int>("MinVoteCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<int>("MinYear")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime(6)");
@@ -668,6 +899,104 @@ namespace LumeServer.Migrations
                     b.Navigation("SpokenLanguage");
                 });
 
+            modelBuilder.Entity("LumeServer.Models.Question.ExtraAnswer", b =>
+                {
+                    b.HasOne("LumeServer.Models.Question.ExtraQuestion", "Question")
+                        .WithMany("Answers")
+                        .HasForeignKey("QuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ExtraAnswerProductionCountry", b =>
+                {
+                    b.HasOne("LumeServer.Models.Question.ExtraAnswer", "ExtraAnswer")
+                        .WithMany("ExtraAnswerProductionCountries")
+                        .HasForeignKey("ExtraAnswerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LumeServer.Models.Movie.ProductionCountry", "ProductionCountry")
+                        .WithMany("ExtraAnswerProductionCountries")
+                        .HasForeignKey("ProductionCountryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ExtraAnswer");
+
+                    b.Navigation("ProductionCountry");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ExtraAnswerSpokenLanguage", b =>
+                {
+                    b.HasOne("LumeServer.Models.Question.ExtraAnswer", "ExtraAnswer")
+                        .WithMany("ExtraAnswerSpokenLanguages")
+                        .HasForeignKey("ExtraAnswerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LumeServer.Models.Movie.SpokenLanguage", "SpokenLanguage")
+                        .WithMany("ExtraAnswerSpokenLanguages")
+                        .HasForeignKey("SpokenLanguageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ExtraAnswer");
+
+                    b.Navigation("SpokenLanguage");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ThemeAnswer", b =>
+                {
+                    b.HasOne("LumeServer.Models.Question.ThemeQuestion", "ThemeQuestion")
+                        .WithMany("ThemeAnswers")
+                        .HasForeignKey("ThemeQuestionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ThemeQuestion");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ThemeAnswerGenre", b =>
+                {
+                    b.HasOne("LumeServer.Models.Movie.Genre", "Genre")
+                        .WithMany("ThemeAnswerGenres")
+                        .HasForeignKey("GenreId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LumeServer.Models.Question.ThemeAnswer", "ThemeAnswer")
+                        .WithMany("ThemeAnswerGenres")
+                        .HasForeignKey("ThemeAnswerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Genre");
+
+                    b.Navigation("ThemeAnswer");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ThemeAnswerKeyword", b =>
+                {
+                    b.HasOne("LumeServer.Models.Movie.Keyword", "Keyword")
+                        .WithMany("ThemeAnswerKeywords")
+                        .HasForeignKey("KeywordId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("LumeServer.Models.Question.ThemeAnswer", "ThemeAnswer")
+                        .WithMany("ThemeAnswerKeywords")
+                        .HasForeignKey("ThemeAnswerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Keyword");
+
+                    b.Navigation("ThemeAnswer");
+                });
+
             modelBuilder.Entity("LumeServer.Models.User.UserDailyProfile", b =>
                 {
                     b.HasOne("LumeServer.Models.User.User", "User")
@@ -818,11 +1147,15 @@ namespace LumeServer.Migrations
             modelBuilder.Entity("LumeServer.Models.Movie.Genre", b =>
                 {
                     b.Navigation("MovieGenres");
+
+                    b.Navigation("ThemeAnswerGenres");
                 });
 
             modelBuilder.Entity("LumeServer.Models.Movie.Keyword", b =>
                 {
                     b.Navigation("MovieKeywords");
+
+                    b.Navigation("ThemeAnswerKeywords");
                 });
 
             modelBuilder.Entity("LumeServer.Models.Movie.Movie", b =>
@@ -849,12 +1182,40 @@ namespace LumeServer.Migrations
 
             modelBuilder.Entity("LumeServer.Models.Movie.ProductionCountry", b =>
                 {
+                    b.Navigation("ExtraAnswerProductionCountries");
+
                     b.Navigation("MovieProductionCountries");
                 });
 
             modelBuilder.Entity("LumeServer.Models.Movie.SpokenLanguage", b =>
                 {
+                    b.Navigation("ExtraAnswerSpokenLanguages");
+
                     b.Navigation("MovieSpokenLanguages");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ExtraAnswer", b =>
+                {
+                    b.Navigation("ExtraAnswerProductionCountries");
+
+                    b.Navigation("ExtraAnswerSpokenLanguages");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ExtraQuestion", b =>
+                {
+                    b.Navigation("Answers");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ThemeAnswer", b =>
+                {
+                    b.Navigation("ThemeAnswerGenres");
+
+                    b.Navigation("ThemeAnswerKeywords");
+                });
+
+            modelBuilder.Entity("LumeServer.Models.Question.ThemeQuestion", b =>
+                {
+                    b.Navigation("ThemeAnswers");
                 });
 
             modelBuilder.Entity("LumeServer.Models.User.User", b =>

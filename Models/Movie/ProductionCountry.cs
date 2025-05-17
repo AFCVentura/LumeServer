@@ -1,4 +1,6 @@
-﻿namespace LumeServer.Models.Movie
+﻿using LumeServer.Models.Question;
+
+namespace LumeServer.Models.Movie
 {
     public class ProductionCountry
     {
@@ -6,6 +8,7 @@
         public string Name { get; set; }
 
         public ICollection<MovieProductionCountry> MovieProductionCountries { get; set; }
+        public ICollection<ExtraAnswerProductionCountry> ExtraAnswerProductionCountries { get; set; }
     }
 
 }
