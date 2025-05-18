@@ -67,5 +67,18 @@ namespace LumeServer.Controllers
             return Ok(new { message = "Senha alterada com sucesso." });
         }
 
+        [Authorize]
+        [HttpDelete("delete-account")]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var success = await _service.DeleteAccountAsync(User);
+
+            if (!success)
+                return BadRequest("Erro ao deletar a conta.");
+
+            return Ok("Conta deletada com sucesso.");
+        }
+
+
     }
 }

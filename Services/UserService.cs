@@ -24,6 +24,14 @@ namespace LumeServer.Services
             _userManager = userManager;
         }
 
+
+        // Logout
+        public async Task LogoutAsync()
+        {
+            await _signInManager.SignOutAsync();
+        }
+
+        // Change DisplayName
         public async Task<bool> ChangeDisplayNameAsync(ClaimsPrincipal userClaims, string newDisplayName)
         {
             var user = await GetUserByClaimsAsync(userClaims);
@@ -36,15 +44,23 @@ namespace LumeServer.Services
             return result.Succeeded;
         }
 
+        // Change Password
         public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
         {
             return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
         }
 
-        // Função de logout
-        public async Task LogoutAsync()
+        // Delete Accounts
+        public async Task<bool> DeleteAccountAsync(ClaimsPrincipal userPrincipal)
         {
+            var user = await _userManager.GetUserAsync(userPrincipal);
+
+            if (user == null)
+                return false;
+
+            var result = await _userManager.DeleteAsync(user);
             await _signInManager.SignOutAsync();
+            return result.Succeeded;
         }
 
 
