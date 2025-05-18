@@ -34,7 +34,18 @@ namespace LumeServer.Controllers
             return Ok(new { message = "Logout efetuado com sucesso." });
         }
 
-        [HttpPatch("password")]
+        [HttpPatch("change-username")]
+        [Authorize]
+        public async Task<IActionResult> ChangeUserName([FromBody] string newDisplayName)
+        {
+            var success = await _service.ChangeDisplayNameAsync(User, newDisplayName);
+            if (!success)
+                return BadRequest(new { message = "Falha ao alterar nome de usuário." });
+
+            return Ok(new { message = "Nome de usuário alterado com sucesso." });
+        }
+
+        [HttpPatch("change-password")]
         [Authorize]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
         {
@@ -55,5 +66,6 @@ namespace LumeServer.Controllers
 
             return Ok(new { message = "Senha alterada com sucesso." });
         }
+
     }
 }

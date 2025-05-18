@@ -24,6 +24,18 @@ namespace LumeServer.Services
             _userManager = userManager;
         }
 
+        public async Task<bool> ChangeDisplayNameAsync(ClaimsPrincipal userClaims, string newDisplayName)
+        {
+            var user = await GetUserByClaimsAsync(userClaims);
+            if (user == null)
+                return false;
+
+            user.DisplayName = newDisplayName;
+            var result = await _userManager.UpdateAsync(user);
+
+            return result.Succeeded;
+        }
+
         public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
         {
             return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
