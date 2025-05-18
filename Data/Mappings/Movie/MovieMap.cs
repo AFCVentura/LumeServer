@@ -2,7 +2,6 @@
 
 namespace LumeServer.Data.Mappings.Movie
 {
-    // Tive que colocar o caminho da classe pois ele não entendeu que Movie era a classe e não o namespace
     public class MovieMap : IEntityTypeConfiguration<LumeServer.Models.Movie.Movie>
     {
         public void Configure(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<LumeServer.Models.Movie.Movie> builder)
@@ -34,6 +33,16 @@ namespace LumeServer.Data.Mappings.Movie
             builder.HasMany(m => m.MovieSpokenLanguages)
                    .WithOne(mk => mk.Movie)
                    .HasForeignKey(mk => mk.MovieId);
+
+            // WishList
+            builder.HasMany(m => m.WishList)
+                .WithOne(wil => wil.Movie)
+                .HasForeignKey(wil => wil.MovieId);
+
+            // WatchedList
+            builder.HasMany(m => m.WatchedList)
+                .WithOne(wal => wal.Movie)
+                .HasForeignKey(wal => wal.MovieId);
 
 
         }

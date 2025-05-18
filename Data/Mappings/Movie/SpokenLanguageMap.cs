@@ -18,6 +18,11 @@ namespace LumeServer.Data.Mappings.Movie
                    .WithOne(mk => mk.SpokenLanguage)
                    .HasForeignKey(mk => mk.SpokenLanguageId)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(k => k.ExtraAnswerSpokenLanguages)
+                   .WithOne(mk => mk.SpokenLanguage)
+                   .HasForeignKey(mk => mk.SpokenLanguageId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

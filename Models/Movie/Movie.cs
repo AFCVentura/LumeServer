@@ -1,4 +1,6 @@
-﻿namespace LumeServer.Models.Movie
+﻿using LumeServer.Models.User;
+
+namespace LumeServer.Models.Movie
 {
     public class Movie
     {
@@ -24,11 +26,13 @@
         public int ClusterId { get; set; }
         public Cluster Cluster { get; set; }
 
-
         public ICollection<MovieGenre> MovieGenres { get; set; }
         public ICollection<MovieKeyword> MovieKeywords { get; set; }
         public ICollection<MovieProductionCompany> MovieProductionCompanies { get; set; }
         public ICollection<MovieProductionCountry> MovieProductionCountries { get; set; }
         public ICollection<MovieSpokenLanguage> MovieSpokenLanguages { get; set; }
+        public ICollection<WatchedList> WatchedList { get; set; }
+        public ICollection<WishList> WishList { get; set; }
     }
 }
+
