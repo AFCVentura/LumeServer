@@ -1,7 +1,6 @@
 ﻿using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LumeServer.Controllers
@@ -33,6 +32,28 @@ namespace LumeServer.Controllers
         {
             await _service.LogoutAsync();
             return Ok(new { message = "Logout efetuado com sucesso." });
+        }
+
+        [HttpPatch("password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var user = await _service.GetUserByClaimsAsync(User);
+            if (user == null)
+                return NotFound(new { message = "Usuário não encontrado." });
+
+            var result = await _service.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(new
+                {
+                    message = "Erro ao alterar a senha.",
+                    errors = result.Errors.Select(e => e.Description)
+                });
+            }
+
+            return Ok(new { message = "Senha alterada com sucesso." });
         }
     }
 }

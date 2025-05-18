@@ -1,6 +1,7 @@
 ﻿using LumeServer.Data;
 using LumeServer.Models.User;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace LumeServer.Services
 {
@@ -14,11 +15,18 @@ namespace LumeServer.Services
         // Aqui vamos criar o construtor do UserService, que vai receber o LumeDataContext como parâmetro.
         private readonly LumeDataContext _context;
         private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<User> _userManager;
 
-        public UserService(LumeDataContext context, SignInManager<User> signInManager)
+        public UserService(LumeDataContext context, SignInManager<User> signInManager, UserManager<User> userManager)
         {
             _context = context;
             _signInManager = signInManager;
+            _userManager = userManager;
+        }
+
+        public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
+        {
+            return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
         }
 
         // Função de logout
@@ -26,6 +34,7 @@ namespace LumeServer.Services
         {
             await _signInManager.SignOutAsync();
         }
+
 
         // Exemplo de método que manipula o banco de dados
         public List<User> GetAllUsers()
@@ -38,5 +47,12 @@ namespace LumeServer.Services
             // Aqui vamos transformar a lista de usuários em uma string e retornar.
             return users;
         }
+
+        
+        public async Task<User?> GetUserByClaimsAsync(ClaimsPrincipal userClaims)
+        {
+            return await _userManager.GetUserAsync(userClaims);
+        }
+
     }
 }
