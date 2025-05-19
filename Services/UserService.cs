@@ -1,6 +1,7 @@
 ﻿using LumeServer.Data;
 using LumeServer.Models.User;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
 
 namespace LumeServer.Services
 {
@@ -14,18 +15,54 @@ namespace LumeServer.Services
         // Aqui vamos criar o construtor do UserService, que vai receber o LumeDataContext como parâmetro.
         private readonly LumeDataContext _context;
         private readonly SignInManager<User> _signInManager;
+        private readonly UserManager<User> _userManager;
 
-        public UserService(LumeDataContext context, SignInManager<User> signInManager)
+        public UserService(LumeDataContext context, SignInManager<User> signInManager, UserManager<User> userManager)
         {
             _context = context;
             _signInManager = signInManager;
+            _userManager = userManager;
         }
 
-        // Função de logout
+
+        // Logout
         public async Task LogoutAsync()
         {
             await _signInManager.SignOutAsync();
         }
+
+        // Change DisplayName
+        public async Task<bool> ChangeDisplayNameAsync(ClaimsPrincipal userClaims, string newDisplayName)
+        {
+            var user = await GetUserByClaimsAsync(userClaims);
+            if (user == null)
+                return false;
+
+            user.DisplayName = newDisplayName;
+            var result = await _userManager.UpdateAsync(user);
+
+            return result.Succeeded;
+        }
+
+        // Change Password
+        public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
+        {
+            return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        }
+
+        // Delete Accounts
+        public async Task<bool> DeleteAccountAsync(ClaimsPrincipal userPrincipal)
+        {
+            var user = await _userManager.GetUserAsync(userPrincipal);
+
+            if (user == null)
+                return false;
+
+            var result = await _userManager.DeleteAsync(user);
+            await _signInManager.SignOutAsync();
+            return result.Succeeded;
+        }
+
 
         // Exemplo de método que manipula o banco de dados
         public List<User> GetAllUsers()
@@ -38,5 +75,12 @@ namespace LumeServer.Services
             // Aqui vamos transformar a lista de usuários em uma string e retornar.
             return users;
         }
+
+        
+        public async Task<User?> GetUserByClaimsAsync(ClaimsPrincipal userClaims)
+        {
+            return await _userManager.GetUserAsync(userClaims);
+        }
+
     }
 }

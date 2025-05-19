@@ -1,7 +1,6 @@
 ﻿using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LumeServer.Controllers
@@ -34,5 +33,52 @@ namespace LumeServer.Controllers
             await _service.LogoutAsync();
             return Ok(new { message = "Logout efetuado com sucesso." });
         }
+
+        [HttpPatch("change-username")]
+        [Authorize]
+        public async Task<IActionResult> ChangeUserName([FromBody] string newDisplayName)
+        {
+            var success = await _service.ChangeDisplayNameAsync(User, newDisplayName);
+            if (!success)
+                return BadRequest(new { message = "Falha ao alterar nome de usuário." });
+
+            return Ok(new { message = "Nome de usuário alterado com sucesso." });
+        }
+
+        [HttpPatch("change-password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            var user = await _service.GetUserByClaimsAsync(User);
+            if (user == null)
+                return NotFound(new { message = "Usuário não encontrado." });
+
+            var result = await _service.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                return BadRequest(new
+                {
+                    message = "Erro ao alterar a senha.",
+                    errors = result.Errors.Select(e => e.Description)
+                });
+            }
+
+            return Ok(new { message = "Senha alterada com sucesso." });
+        }
+
+        [Authorize]
+        [HttpDelete("delete-account")]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var success = await _service.DeleteAccountAsync(User);
+
+            if (!success)
+                return BadRequest("Erro ao deletar a conta.");
+
+            return Ok("Conta deletada com sucesso.");
+        }
+
+
     }
 }
