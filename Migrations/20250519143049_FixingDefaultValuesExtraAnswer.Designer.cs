@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LumeServer.Migrations
 {
     [DbContext(typeof(LumeDataContext))]
-    [Migration("20250513230350_Migracao das questoes")]
-    partial class Migracaodasquestoes
+    [Migration("20250519143049_FixingDefaultValuesExtraAnswer")]
+    partial class FixingDefaultValuesExtraAnswer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -290,22 +290,34 @@ namespace LumeServer.Migrations
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<float>("MaxVoteAverage")
-                        .HasColumnType("float");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(10.1f);
 
                     b.Property<int>("MaxVoteCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(1000000);
 
                     b.Property<int>("MaxYear")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(5000);
 
                     b.Property<float>("MinVoteAverage")
-                        .HasColumnType("float");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("float")
+                        .HasDefaultValue(0f);
 
                     b.Property<int>("MinVoteCount")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("MinYear")
-                        .HasColumnType("int");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
 
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
@@ -462,6 +474,9 @@ namespace LumeServer.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("DisplayName")
                         .HasColumnType("longtext");
 
                     b.Property<string>("Email")

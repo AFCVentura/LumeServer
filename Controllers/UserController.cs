@@ -1,4 +1,5 @@
-﻿using LumeServer.Models.User;
+﻿using LumeServer.Models.Question;
+using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,7 @@ namespace LumeServer.Controllers
 {
     // Essa é a classe Controller, ela é responsável por receber as requisições e retornar as respostas.
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     public class UserController : ControllerBase
     {
         private UserService _service;
@@ -24,6 +25,34 @@ namespace LumeServer.Controllers
         public List<User> GetAll()
         {
             return _service.GetAllUsers();
+        }
+
+        // Enviar perguntas extras de perfil geral (com alternativas)
+        [HttpGet("get-general-extra-questions")]
+        public async Task<List<ExtraQuestion>> GetGeneralExtraQuestions()
+        {
+            return await _service.FindAllProfileExtraQuestionsEagerAsync();
+        }
+
+        // Enviar perguntas de tema de perfil geral (com alternativas)
+        [HttpGet("get-general-theme-questions")]
+        public async Task<List<ThemeQuestion>> GetGeneralThemeQuestions()
+        {
+            return await _service.FindAllProfileThemeQuestionsEagerAsync();
+        }
+
+        // Enviar perguntas extras de perfil geral (com alternativas)
+        [HttpGet("get-daily-extra-questions")]
+        public async Task<List<ExtraQuestion>> GetDailyExtraQuestions()
+        {
+            return await _service.FindAllDailyExtraQuestionsEagerAsync();
+        }
+
+        // Enviar perguntas de tema de perfil geral (com alternativas)
+        [HttpGet("get-daily-theme-questions")]
+        public async Task<List<ThemeQuestion>> GetDailyThemeQuestions()
+        {
+            return await _service.FindAllDailyThemeQuestionsEagerAsync();
         }
 
         [HttpPost("logout")]

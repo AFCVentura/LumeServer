@@ -3,6 +3,7 @@ using LumeServer.Data;
 using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace LumeServer
 {
@@ -25,6 +26,13 @@ namespace LumeServer
                           .AllowAnyHeader();
                 });
             });
+
+            // Configura o de serialização JSON para ignorar ciclos de referência
+            builder.Services.AddControllers()
+                .AddJsonOptions(opt =>
+                {
+                    opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                });
 
             // Aqui estamos dizendo que essa aplicação vai usar Controllers (porque tem como fazer sem eles também).
             builder.Services.AddControllers();

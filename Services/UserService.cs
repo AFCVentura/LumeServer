@@ -1,6 +1,8 @@
 ﻿using LumeServer.Data;
+using LumeServer.Models.Question;
 using LumeServer.Models.User;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace LumeServer.Services
@@ -24,6 +26,34 @@ namespace LumeServer.Services
             _userManager = userManager;
         }
 
+
+        // Enviar perguntas extras de perfil geral
+        // Eager: Carrega as alternativas também
+        public async Task<List<ExtraQuestion>> FindAllProfileExtraQuestionsEagerAsync()
+        {
+            return await _context.ExtraQuestions.Where(eq => eq.IsGeneralProfile).Include(eq => eq.Answers).ToListAsync();
+        }
+
+        // Enviar perguntas de tema de perfil geral
+        // Eager: Carrega as alternativas também
+        public async Task<List<ThemeQuestion>> FindAllProfileThemeQuestionsEagerAsync()
+        {
+            return await _context.ThemeQuestions.Where(eq => eq.IsGeneralProfile).Include(tq => tq.ThemeAnswers).ToListAsync();
+        }
+
+        // Enviar perguntas extras de perfil do momento
+        // Eager: Carrega as alternativas também
+        public async Task<List<ExtraQuestion>> FindAllDailyExtraQuestionsEagerAsync()
+        {
+            return await _context.ExtraQuestions.Where(eq => !eq.IsGeneralProfile).Include(eq => eq.Answers).ToListAsync();
+        }
+
+        // Enviar perguntas de tema de perfil do momento
+        // Eager: Carrega as alternativas também
+        public async Task<List<ThemeQuestion>> FindAllDailyThemeQuestionsEagerAsync()
+        {
+            return await _context.ThemeQuestions.Where(eq => !eq.IsGeneralProfile).Include(tq => tq.ThemeAnswers).ToListAsync();
+        }
 
         // Logout
         public async Task LogoutAsync()
@@ -76,7 +106,7 @@ namespace LumeServer.Services
             return users;
         }
 
-        
+
         public async Task<User?> GetUserByClaimsAsync(ClaimsPrincipal userClaims)
         {
             return await _userManager.GetUserAsync(userClaims);

@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LumeServer.Migrations
 {
     /// <inheritdoc />
-    public partial class Migracaodasquestoes : Migration
+    public partial class FixingDefaultValuesExtraAnswer : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -39,6 +39,8 @@ namespace LumeServer.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    DisplayName = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     MinVoteAverage = table.Column<float>(type: "float", nullable: false, defaultValue: 0f),
                     MaxVoteAverage = table.Column<float>(type: "float", nullable: false, defaultValue: 10.1f),
@@ -438,12 +440,12 @@ namespace LumeServer.Migrations
                         .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Text = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    MinVoteAverage = table.Column<float>(type: "float", nullable: false),
-                    MaxVoteAverage = table.Column<float>(type: "float", nullable: false),
-                    MinVoteCount = table.Column<int>(type: "int", nullable: false),
-                    MaxVoteCount = table.Column<int>(type: "int", nullable: false),
-                    MinYear = table.Column<int>(type: "int", nullable: false),
-                    MaxYear = table.Column<int>(type: "int", nullable: false),
+                    MinVoteAverage = table.Column<float>(type: "float", nullable: false, defaultValue: 0f),
+                    MaxVoteAverage = table.Column<float>(type: "float", nullable: false, defaultValue: 10.1f),
+                    MinVoteCount = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    MaxVoteCount = table.Column<int>(type: "int", nullable: false, defaultValue: 1000000),
+                    MinYear = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    MaxYear = table.Column<int>(type: "int", nullable: false, defaultValue: 5000),
                     QuestionId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

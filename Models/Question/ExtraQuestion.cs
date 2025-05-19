@@ -10,5 +10,10 @@ namespace LumeServer.Models.Question
         public bool IsMultipleChoice { get; set; }
         public ExtraQuestionTypes QuestionType { get; set; }
         public ICollection<ExtraAnswer> Answers { get; set; }
+
+        public ExtraQuestion()
+        {
+            Answers = new List<ExtraAnswer>();
+        }
     }
 }

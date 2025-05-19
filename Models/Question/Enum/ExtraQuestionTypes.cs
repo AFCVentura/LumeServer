@@ -2,9 +2,8 @@
 {
     public enum ExtraQuestionTypes
     {
-        VoteCount = 1,
-        VoteAverage = 2,
-        ReleaseDate = 3,
-        LanguageAndCountry = 4
+        VoteCountAndAverage = 1,
+        ReleaseDate = 2,
+        LanguageAndCountry = 3
     }
 }

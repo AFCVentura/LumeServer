@@ -14,5 +14,11 @@
         public int QuestionId { get; set; }
         public ICollection<ExtraAnswerProductionCountry> ExtraAnswerProductionCountries { get; set; }
         public ICollection<ExtraAnswerSpokenLanguage> ExtraAnswerSpokenLanguages { get; set; }
+
+        public ExtraAnswer()
+        {
+            ExtraAnswerProductionCountries = new List<ExtraAnswerProductionCountry>();
+            ExtraAnswerSpokenLanguages = new List<ExtraAnswerSpokenLanguage>();
+        }
     }
 }
