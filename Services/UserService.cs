@@ -26,20 +26,22 @@ namespace LumeServer.Services
             _userManager = userManager;
         }
 
-
+        #region Métodos para as perguntas e respostas
         // Enviar perguntas extras de perfil geral
         // Eager: Carrega as alternativas também
-        public async Task<List<ExtraQuestion>> FindAllProfileExtraQuestionsEagerAsync()
+        public async Task<List<ExtraQuestion>> FindAllGeneralExtraQuestionsEagerAsync()
         {
             return await _context.ExtraQuestions.Where(eq => eq.IsGeneralProfile).Include(eq => eq.Answers).ToListAsync();
         }
 
         // Enviar perguntas de tema de perfil geral
         // Eager: Carrega as alternativas também
-        public async Task<List<ThemeQuestion>> FindAllProfileThemeQuestionsEagerAsync()
+        public async Task<List<ThemeQuestion>> FindAllGeneralThemeQuestionsEagerAsync()
         {
             return await _context.ThemeQuestions.Where(eq => eq.IsGeneralProfile).Include(tq => tq.ThemeAnswers).ToListAsync();
         }
+
+
 
         // Enviar perguntas extras de perfil do momento
         // Eager: Carrega as alternativas também
@@ -54,6 +56,7 @@ namespace LumeServer.Services
         {
             return await _context.ThemeQuestions.Where(eq => !eq.IsGeneralProfile).Include(tq => tq.ThemeAnswers).ToListAsync();
         }
+        #endregion
 
         // Logout
         public async Task LogoutAsync()

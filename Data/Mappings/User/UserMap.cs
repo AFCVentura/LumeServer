@@ -18,6 +18,16 @@ namespace LumeServer.Data.Mappings.User
                 .WithOne(ugpc => ugpc.User)
                 .HasForeignKey(ugpc => ugpc.UserId);
 
+            // GeneralProfileProductionCountries
+            builder.HasMany(u => u.GeneralProfileProductionCountries)
+                .WithOne(ugpc => ugpc.User)
+                .HasForeignKey(ugpc => ugpc.UserId);
+
+            // GeneralProfileSpokenLanguages
+            builder.HasMany(u => u.GeneralProfileSpokenLanguages)
+                .WithOne(ugpc => ugpc.User)
+                .HasForeignKey(ugpc => ugpc.UserId);
+
             // WishList
             builder.HasMany(u => u.WishList)
                 .WithOne(wil => wil.User)
@@ -40,6 +50,10 @@ namespace LumeServer.Data.Mappings.User
                    .HasDefaultValue(0);
             builder.Property(u => u.MaxYear)
                    .HasDefaultValue(5000);
+            builder.Property(u => u.MinDuration)
+                   .HasDefaultValue(0);
+            builder.Property(u => u.MaxDuration)
+                   .HasDefaultValue(1000);
         }
     }
 }

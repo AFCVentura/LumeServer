@@ -4,6 +4,7 @@ using LumeServer.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LumeServer.Migrations
 {
     [DbContext(typeof(LumeDataContext))]
-    partial class LumeDataContextModelSnapshot : ModelSnapshot
+    [Migration("20250520004656_adicao de atributos de duracao e conexao de user e userdailyprofile com paises e idiomas")]
+    partial class adicaodeatributosdeduracaoeconexaodeusereuserdailyprofilecompaiseseidiomas
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

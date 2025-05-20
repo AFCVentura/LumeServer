@@ -14,12 +14,26 @@ namespace LumeServer.Data.Mappings.Movie
                    .IsRequired()
                    .HasMaxLength(100);
 
+            // MovieSpokenLanguages
             builder.HasMany(k => k.MovieSpokenLanguages)
                    .WithOne(mk => mk.SpokenLanguage)
                    .HasForeignKey(mk => mk.SpokenLanguageId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            // ExtraAnswerSpokenLanguages
             builder.HasMany(k => k.ExtraAnswerSpokenLanguages)
+                   .WithOne(mk => mk.SpokenLanguage)
+                   .HasForeignKey(mk => mk.SpokenLanguageId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // UserGeneralProfileSpokenLanguages
+            builder.HasMany(k => k.UserGeneralProfileSpokenLanguages)
+                   .WithOne(mk => mk.SpokenLanguage)
+                   .HasForeignKey(mk => mk.SpokenLanguageId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            // UserDailyProfileSpokenLanguages
+            builder.HasMany(k => k.UserDailyProfileSpokenLanguages)
                    .WithOne(mk => mk.SpokenLanguage)
                    .HasForeignKey(mk => mk.SpokenLanguageId)
                    .OnDelete(DeleteBehavior.Cascade);

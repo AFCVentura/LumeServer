@@ -14,12 +14,26 @@ namespace LumeServer.Data.Mappings.Movie
                    .IsRequired()
                    .HasMaxLength(100);
 
+            // MovieProductionCountries
             builder.HasMany(k => k.MovieProductionCountries)
                    .WithOne(mk => mk.ProductionCountry)
                    .HasForeignKey(mk => mk.ProductionCountryId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            // ExtraAnswerProductionCountries
             builder.HasMany(k => k.ExtraAnswerProductionCountries)
+                .WithOne(mk => mk.ProductionCountry)
+                .HasForeignKey(mk => mk.ProductionCountryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // UserGeneralProfileProductionCountries
+            builder.HasMany(k => k.UserGeneralProfileProductionCountries)
+                .WithOne(mk => mk.ProductionCountry)
+                .HasForeignKey(mk => mk.ProductionCountryId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // UserDailyProfileProductionCountries
+            builder.HasMany(k => k.UserDailyProfileProductionCountries)
                 .WithOne(mk => mk.ProductionCountry)
                 .HasForeignKey(mk => mk.ProductionCountryId)
                 .OnDelete(DeleteBehavior.Cascade);

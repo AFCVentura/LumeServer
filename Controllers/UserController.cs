@@ -31,14 +31,14 @@ namespace LumeServer.Controllers
         [HttpGet("get-general-extra-questions")]
         public async Task<List<ExtraQuestion>> GetGeneralExtraQuestions()
         {
-            return await _service.FindAllProfileExtraQuestionsEagerAsync();
+            return await _service.FindAllGeneralExtraQuestionsEagerAsync();
         }
 
         // Enviar perguntas de tema de perfil geral (com alternativas)
         [HttpGet("get-general-theme-questions")]
         public async Task<List<ThemeQuestion>> GetGeneralThemeQuestions()
         {
-            return await _service.FindAllProfileThemeQuestionsEagerAsync();
+            return await _service.FindAllGeneralThemeQuestionsEagerAsync();
         }
 
         // Enviar perguntas extras de perfil geral (com alternativas)

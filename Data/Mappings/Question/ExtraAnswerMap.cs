@@ -37,6 +37,10 @@ namespace LumeServer.Data.Mappings.Question
                    .HasDefaultValue(0);
             builder.Property(ea => ea.MaxYear)
                    .HasDefaultValue(5000);
+            builder.Property(u => u.MinDuration)
+                   .HasDefaultValue(0);
+            builder.Property(u => u.MaxDuration)
+                   .HasDefaultValue(1000);
         }
     }
 }

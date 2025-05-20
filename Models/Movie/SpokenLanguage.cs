@@ -1,4 +1,5 @@
 ﻿using LumeServer.Models.Question;
+using LumeServer.Models.User;
 
 namespace LumeServer.Models.Movie
 {
@@ -9,5 +10,8 @@ namespace LumeServer.Models.Movie
 
         public ICollection<ExtraAnswerSpokenLanguage> ExtraAnswerSpokenLanguages { get; set; }
         public ICollection<MovieSpokenLanguage> MovieSpokenLanguages { get; set; }
+        public ICollection<UserDailyProfileSpokenLanguage> UserDailyProfileSpokenLanguages { get; set; }
+        public ICollection<UserGeneralProfileSpokenLanguage> UserGeneralProfileSpokenLanguages { get; set; }
+
     }
 }

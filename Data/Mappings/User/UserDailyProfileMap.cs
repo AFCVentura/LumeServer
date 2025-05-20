@@ -15,6 +15,14 @@ namespace LumeServer.Data.Mappings.User
                    .WithMany(u => u.DailyProfiles)
                    .HasForeignKey(udp => udp.UserId);
 
+            builder.HasMany(udp => udp.UserDailyProfileSpokenLanguages)
+                   .WithOne(udpsl => udpsl.UserDailyProfile)
+                   .HasForeignKey(udpsl => udpsl.UserDailyProfileId);
+
+            builder.HasMany(udp => udp.UserDailyProfileProductionCountries)
+                   .WithOne(udppc => udppc.UserDailyProfile)
+                   .HasForeignKey(udppc => udppc.UserDailyProfileId);
+
             builder.Property(udp => udp.MinVoteAverage)
                    .HasDefaultValue(0.0f);
             builder.Property(udp => udp.MaxVoteAverage)
@@ -27,6 +35,10 @@ namespace LumeServer.Data.Mappings.User
                    .HasDefaultValue(0);
             builder.Property(udp => udp.MaxYear)
                    .HasDefaultValue(5000);
+            builder.Property(u => u.MinDuration)
+                   .HasDefaultValue(0);
+            builder.Property(u => u.MaxDuration)
+                   .HasDefaultValue(1000);
         }
     }
 }
