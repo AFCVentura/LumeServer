@@ -1,4 +1,5 @@
 ﻿using LumeServer.Data;
+using LumeServer.Models.Movie;
 using LumeServer.Models.Question;
 using LumeServer.Models.User;
 using Microsoft.AspNetCore.Identity;
@@ -56,7 +57,79 @@ namespace LumeServer.Services
         {
             return await _context.ThemeQuestions.Where(eq => !eq.IsGeneralProfile).Include(tq => tq.ThemeAnswers).ToListAsync();
         }
+
+
+        // Enviar 20 filmes famosos (com mais de 15 mil votos) aleatórios
+        public async Task<List<Movie>> GetFamousMoviesAsync()
+        {
+            return await _context.Movies
+                .Where(m => m.VoteCount > 15000)
+                .Include(m => m.MovieGenres)
+                    .ThenInclude(mg => mg.Genre)
+                .OrderBy(x => EF.Functions.Random()) // Aleatório
+                .Take(20)
+                .ToListAsync();
+        }
+
+        public async Task PostChosenThemeAnswersAndMoviesAsync(List<int> themeAnswerIds, List<int> chosenMoviesId, string Id)
+        {
+            // Pega a resposta de tema, seus gêneros e palavras-chave equivalentes.
+            var themeAnswers = await _context.ThemeAnswers
+                .Where(ta => themeAnswerIds.Contains(ta.Id))
+                .Include(ta => ta.ThemeAnswerGenres)
+                    .ThenInclude(tag => tag.Genre)
+                .Include(ta => ta.ThemeAnswerKeywords)
+                    .ThenInclude(tak => tak.Keyword)
+                .ToListAsync();
+
+            var movies = await _context.Movies
+                .Where(m => chosenMoviesId.Contains(m.Id))
+                .Include(m => m.MovieGenres)
+                    .ThenInclude(mg => mg.Genre)
+                .Include(m => m.MovieKeywords)
+                    .ThenInclude(mg => mg.Keyword)
+                .ToListAsync();
+
+        }
+
+        public async Task PutGeneralProfileExtraPreferencesAsync(List<int> extraAnswerIds, string id)
+        {
+            if (extraAnswerIds is null || !extraAnswerIds.Any())
+                throw new ArgumentException("No answer IDs provided.");
+
+            // Buscar todas as respostas válidas de uma vez
+            var extraAnswers = await _context.ExtraAnswers
+                .Where(ea => extraAnswerIds.Contains(ea.Id))
+                .ToListAsync();
+
+
+            // Buscar o usuário
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user is null)
+                throw new Exception("User not found.");
+
+
+            user.MinYear = extraAnswers.Max(e => e.MinYear);
+            user.MaxYear = extraAnswers.Min(e => e.MaxYear);
+
+            user.MinVoteAverage = extraAnswers.Max(e => e.MinVoteAverage);
+            user.MaxVoteAverage = extraAnswers.Min(e => e.MaxVoteAverage);
+
+            user.MinVoteCount = extraAnswers.Max(e => e.MinVoteCount);
+            user.MaxVoteCount = extraAnswers.Min(e => e.MaxVoteCount);
+
+            user.MinDuration = extraAnswers.Max(e => e.MinDuration);
+            user.MaxDuration = extraAnswers.Min(e => e.MaxDuration);
+
+
+            await _context.SaveChangesAsync();
+        }
+
         #endregion
+
+
 
         // Logout
         public async Task LogoutAsync()
@@ -97,6 +170,8 @@ namespace LumeServer.Services
         }
 
 
+
+
         // Exemplo de método que manipula o banco de dados
         public List<User> GetAllUsers()
         {
@@ -110,10 +185,12 @@ namespace LumeServer.Services
         }
 
 
+
+
+
         public async Task<User?> GetUserByClaimsAsync(ClaimsPrincipal userClaims)
         {
             return await _userManager.GetUserAsync(userClaims);
         }
-
     }
 }

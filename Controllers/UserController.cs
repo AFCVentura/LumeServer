@@ -1,4 +1,6 @@
-﻿using LumeServer.Models.Question;
+﻿using LumeServer.DTOs;
+using LumeServer.Models.Movie;
+using LumeServer.Models.Question;
 using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -27,21 +29,21 @@ namespace LumeServer.Controllers
             return _service.GetAllUsers();
         }
 
-        // Enviar perguntas extras de perfil geral (com alternativas)
+        // Usuário recebe perguntas extras de perfil geral (com alternativas)
         [HttpGet("get-general-extra-questions")]
         public async Task<List<ExtraQuestion>> GetGeneralExtraQuestions()
         {
             return await _service.FindAllGeneralExtraQuestionsEagerAsync();
         }
 
-        // Enviar perguntas de tema de perfil geral (com alternativas)
+        // Usuário recebe perguntas de tema de perfil geral (com alternativas)
         [HttpGet("get-general-theme-questions")]
         public async Task<List<ThemeQuestion>> GetGeneralThemeQuestions()
         {
             return await _service.FindAllGeneralThemeQuestionsEagerAsync();
         }
 
-        // Enviar perguntas extras de perfil geral (com alternativas)
+        // Usuário recebe perguntas extras de perfil geral (com alternativas)
         [HttpGet("get-daily-extra-questions")]
         public async Task<List<ExtraQuestion>> GetDailyExtraQuestions()
         {
@@ -53,6 +55,40 @@ namespace LumeServer.Controllers
         public async Task<List<ThemeQuestion>> GetDailyThemeQuestions()
         {
             return await _service.FindAllDailyThemeQuestionsEagerAsync();
+        }
+
+        // Usuário recebe 20 filmes famosos (com mais de 15 mil votos) aleatórios
+        [HttpGet("get-famous-movies")]
+        public async Task<List<Movie>> GetFamousMovies()
+        {
+            return await _service.GetFamousMoviesAsync();
+        }
+
+        // Usuário envia alternativas de tema escolhidas (na criação da conta) 
+        [HttpPost("general-theme-answers")]
+        public async Task PostChosenGeneralThemeAnswers([FromBody] ChosenThemeAnswersRequestDTO request)
+        {
+            try
+            {
+                await _service.PostChosenThemeAnswersAndMoviesAsync(request.ThemeAnswerIds, request.ChosenMovieIds, request.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+            }
+        }
+        // Usuário envia alternativas extras escolhidas (na criação da conta)
+        [HttpPost("general-extra-answers")]
+        public async Task PostChosenGeneralExtraAnswers([FromBody] ChosenExtraAnswersRequestDTO request)
+        {
+            try
+            {
+                await _service.PutGeneralProfileExtraPreferencesAsync(request.ExtraAnswerIds, request.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+            }
         }
 
         [HttpPost("logout")]
