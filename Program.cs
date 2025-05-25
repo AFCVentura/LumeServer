@@ -1,5 +1,6 @@
 // Namespaces são basicamente o caminho dessa classe dentro do projeto, não precisa ser exatamente o mesmo caminho das pastas, mas é mais fácil adotar esse padrão.
 using LumeServer.Data;
+using LumeServer.EmailSender;
 using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,9 @@ namespace LumeServer
         {
             // O builder é o objeto que builda a aplicação, ele é responsável por adicionar serviços, configurar a aplicação e afins.
             var builder = WebApplication.CreateBuilder(args);
+
+            // Aqui estamos registrando o serviço de envio de e-mails.
+            builder.Services.AddTransient<IEmailSender, LumeServer.EmailSender.EmailSender>();
 
             // Configuração de CORS
             builder.Services.AddCors(options =>
