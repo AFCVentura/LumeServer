@@ -1,8 +1,10 @@
 // Namespaces são basicamente o caminho dessa classe dentro do projeto, não precisa ser exatamente o mesmo caminho das pastas, mas é mais fácil adotar esse padrão.
 using LumeServer.Data;
+using LumeServer.EmailSender;
 using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace LumeServer
 {
@@ -15,6 +17,9 @@ namespace LumeServer
             // O builder é o objeto que builda a aplicação, ele é responsável por adicionar serviços, configurar a aplicação e afins.
             var builder = WebApplication.CreateBuilder(args);
 
+            // Aqui estamos registrando o serviço de envio de e-mails.
+            builder.Services.AddTransient<IEmailSender, LumeServer.EmailSender.EmailSender>();
+
             // Configuração de CORS
             builder.Services.AddCors(options =>
             {
@@ -26,6 +31,13 @@ namespace LumeServer
                 });
             });
 
+            // Configura o de serialização JSON para ignorar ciclos de referência
+            builder.Services.AddControllers()
+                .AddJsonOptions(opt =>
+                {
+                    opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                });
+
             // Aqui estamos dizendo que essa aplicação vai usar Controllers (porque tem como fazer sem eles também).
             builder.Services.AddControllers();
 
@@ -33,8 +45,11 @@ namespace LumeServer
             var connectionString =
                 builder.Configuration.GetConnectionString("CONNECTION_STRING");
 
-            // Aqui estamos registrando o UserService com injeção de dependência.
+            // Aqui estamos registrando os Services com injeção de dependência.
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<LumeAIService>();
+            builder.Services.AddScoped<QuestionService>();
+            builder.Services.AddScoped<MovieService>();
 
             // Registra o DbContext com injeção de dependência
             builder.Services.AddDbContext<LumeDataContext>(options =>

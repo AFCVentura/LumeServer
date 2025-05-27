@@ -21,7 +21,11 @@ Verifique se existe um arquivo chamado **appsettings.Development.json**, se não
   },
   "ConnectionStrings": {
     "CONNECTION_STRING": "server=localhost;userid=ventura;password=1234;database=Lume"
-  }
+  },
+  "Email": {
+  "Address": "lumenotifications@gmail.com",
+  "Password": "senhaDoEmail"
+}
 }
 ```
 

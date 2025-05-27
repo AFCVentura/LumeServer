@@ -16,7 +16,7 @@ namespace LumeServer.Data.Mappings.Movie
 
             builder.HasOne(mk => mk.ProductionCompany)
                    .WithMany(k => k.MovieProductionCompanies)
-                   .HasForeignKey(mk => mk.KeywordId);
+                   .HasForeignKey(mk => mk.ProductionCompanyId);
         }
     }
 }
