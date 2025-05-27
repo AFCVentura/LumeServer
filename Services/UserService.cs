@@ -2,6 +2,7 @@
 using LumeServer.DTOs.LumeAI;
 using LumeServer.Models.Movie;
 using LumeServer.Models.Question;
+using LumeServer.EmailSender;
 using LumeServer.Models.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,12 +21,14 @@ namespace LumeServer.Services
         private readonly LumeDataContext _context;
         private readonly SignInManager<User> _signInManager;
         private readonly UserManager<User> _userManager;
+        private readonly IEmailSender _emailSender;
 
-        public UserService(LumeDataContext context, SignInManager<User> signInManager, UserManager<User> userManager)
+        public UserService(LumeDataContext context, SignInManager<User> signInManager, UserManager<User> userManager, IEmailSender emailSender)
         {
             _context = context;
             _signInManager = signInManager;
             _userManager = userManager;
+            _emailSender = emailSender;
         }
 
         // Logout
@@ -51,6 +54,32 @@ namespace LumeServer.Services
         public async Task<IdentityResult> ChangePasswordAsync(User user, string currentPassword, string newPassword)
         {
             return await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        }
+
+        // Forgot Password
+        public async Task<bool> ForgotPasswordAsync(string email, string baseUrl)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return false;
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var resetLink = $"{baseUrl}?email={email}&token={Uri.EscapeDataString(token)}";
+
+            await _emailSender.SendEmailAsync(
+                email,
+                "Redefinição de Senha - LUME",
+                $"Clique no link para redefinir sua senha: {resetLink}");
+
+            return true;
+        }
+
+        // Reset Password
+        public async Task<IdentityResult> ResetPasswordAsync(string email, string token, string newPassword)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+            if (user == null) return IdentityResult.Failed();
+
+            return await _userManager.ResetPasswordAsync(user, token, newPassword);
         }
 
         // Delete Accounts

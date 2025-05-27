@@ -73,6 +73,25 @@ namespace LumeServer.Controllers
             return Ok(new { message = "Senha alterada com sucesso." });
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] string email)
+        {
+            var baseUrl = $"{Request.Scheme}://{Request.Host}/reset-password"; // ou configure no appsettings
+            var result = await _service.ForgotPasswordAsync(email, baseUrl);
+
+            if (!result) return NotFound("Usuário não encontrado");
+            return Ok("E-mail de redefinição enviado.");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
+        {
+            var result = await _service.ResetPasswordAsync(dto.Email, dto.Token, dto.NewPassword);
+            if (!result.Succeeded) return BadRequest("Erro ao redefinir senha.");
+
+            return Ok("Senha redefinida com sucesso.");
+        }
+
         [Authorize]
         [HttpDelete("delete-account")]
         public async Task<IActionResult> DeleteAccount()
