@@ -41,8 +41,11 @@ namespace LumeServer
             var connectionString =
                 builder.Configuration.GetConnectionString("CONNECTION_STRING");
 
-            // Aqui estamos registrando o UserService com injeção de dependência.
+            // Aqui estamos registrando os Services com injeção de dependência.
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<LumeAIService>();
+            builder.Services.AddScoped<QuestionService>();
+            builder.Services.AddScoped<MovieService>();
 
             // Registra o DbContext com injeção de dependência
             builder.Services.AddDbContext<LumeDataContext>(options =>
