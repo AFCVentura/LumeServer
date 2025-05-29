@@ -57,7 +57,7 @@ namespace LumeServer.Controllers
 
         // Usuário envia alternativas de tema escolhidas (na criação da conta) 
         [HttpPost("general-theme-answers")]
-        public async Task PostChosenGeneralThemeAnswers([FromBody] ChosenThemeAnswersRequestDTO request)
+        public async Task PostChosenGeneralThemeAnswers([FromBody] ChosenThemeAnswersAndMoviesRequestDTO request)
         {
             try
             {
@@ -66,6 +66,7 @@ namespace LumeServer.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+                StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
             }
         }
         // Usuário envia alternativas extras escolhidas (na criação da conta)
@@ -79,8 +80,38 @@ namespace LumeServer.Controllers
             catch (Exception ex)
             {
                 Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+                StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
             }
         }
+        // Usuário envia alternativas de tema escolhidas (no uso do dia a dia)
+        [HttpPost("daily-theme-answers")]
+        public async Task PostChosenDailyThemeAnswers([FromBody] ChosenThemeAnswersRequestDTO request)
+        {
+            try
+            {
+                await _service.PutDailyProfileThemePreferencesAsync(request.ThemeAnswerIds, request.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+                StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
+            }
+        }
+        // Usuário envia alternativas extras escolhidas (no uso do dia a dia)
+        [HttpPost("daily-extra-answers")]
+        public async Task PostChosenDailyExtraAnswers([FromBody] ChosenExtraAnswersRequestDTO request)
+        {
+            try
+            {
+                await _service.PutDailyProfileExtraPreferencesAsync(request.ExtraAnswerIds, request.Id);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+                StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
+            }
+        }
+
         #endregion
     }
 }
