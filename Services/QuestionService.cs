@@ -9,6 +9,7 @@ namespace LumeServer.Services
 {
     public class QuestionService
     {
+        private readonly LumeDataContext _context;
         private readonly LumeAIService _lumeAIService;
 
         public QuestionService(LumeDataContext context, LumeAIService lumeAIService)
