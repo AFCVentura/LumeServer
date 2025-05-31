@@ -36,8 +36,16 @@ namespace LumeServer.Controllers
         [Authorize]
         public async Task<IActionResult> Logout()
         {
-            await _service.LogoutAsync();
-            return Ok(new { message = "Logout efetuado com sucesso." });
+            try
+            {
+                await _service.LogoutAsync();
+                return Ok(new { message = "Logout efetuado com sucesso." });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
+            }
         }
 
         [HttpPatch("change-username")]
