@@ -4,6 +4,7 @@
     {
         VoteCountAndAverage = 1,
         ReleaseDate = 2,
-        LanguageAndCountry = 3
+        LanguageAndCountry = 3,
+        Duration = 4
     }
 }

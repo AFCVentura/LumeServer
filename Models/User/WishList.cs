@@ -7,5 +7,6 @@ namespace LumeServer.Models.User
         public User User { get; set; }
         public int MovieId { get; set; }
         public Movie.Movie Movie { get; set; } // Classe movie na pasta movie
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow; // Data de criação do item na wishlist
     }
 }

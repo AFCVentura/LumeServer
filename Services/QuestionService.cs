@@ -2,6 +2,7 @@
 using LumeServer.DTOs.LumeAI;
 using LumeServer.Models.Movie;
 using LumeServer.Models.Question;
+using LumeServer.Models.User;
 using Microsoft.EntityFrameworkCore;
 
 namespace LumeServer.Services
@@ -73,6 +74,7 @@ namespace LumeServer.Services
                     .ThenInclude(tak => tak.Keyword)
                 .ToListAsync();
 
+            // Pega os filmes escolhidos, seus gêneros e palavras-chave equivalentes.
             var movies = await _context.Movies
                 .Where(m => chosenMoviesId.Contains(m.Id))
                 .Include(m => m.MovieGenres)
@@ -103,6 +105,7 @@ namespace LumeServer.Services
             }
 
 
+            // Cria a estrutura que a IA vai usar para comparar
             var inputData = new MovieData
             {
                 Genres = string.Join(",", genres),
@@ -114,11 +117,17 @@ namespace LumeServer.Services
                 ProductionCompanies = "", // Pode ser vazio
             };
 
-            var closestClusterIds = _lumeAIService.GetClosestClusters(inputData);
+            // Chama o método do service da IA que faz a vetorização e comparação dos filmes com base nos parâmetros
+            var closestClusterIds = await _lumeAIService.GetClosestClusters(inputData);
 
+            // Salva os clusters mais próximos no perfil geral do usuário
+            _context.UserGeneralProfileClusters.AddRange(closestClusterIds.Select(c => new UserGeneralProfileCluster
+            {
+                UserId = Id,
+                ClusterId = c.Id,
+            }));
 
-            // TESTAR ISSO DEPOIS
-            Console.WriteLine($"Clusters mais próximos: {closestClusterIds[0]}, {closestClusterIds[1]}, {closestClusterIds[2]}");
+            await _context.SaveChangesAsync();
 
         }
 
@@ -130,7 +139,11 @@ namespace LumeServer.Services
             // Buscar todas as respostas válidas de uma vez
             var extraAnswers = await _context.ExtraAnswers
                 .Where(ea => extraAnswerIds.Contains(ea.Id))
+                .Include(ea => ea.ExtraAnswerProductionCountries)
+                .Include(ea => ea.ExtraAnswerSpokenLanguages)
                 .ToListAsync();
+
+
 
 
             // Buscar o usuário
@@ -153,6 +166,212 @@ namespace LumeServer.Services
             user.MinDuration = extraAnswers.Max(e => e.MinDuration);
             user.MaxDuration = extraAnswers.Min(e => e.MaxDuration);
 
+            var userHasFavoriteProductionCountries = await _context.UserGeneralProfileProductionCountries.AnyAsync(ugppc => ugppc.UserId == id);
+            var userHasFavoriteSpokenLanguages = await _context.UserGeneralProfileSpokenLanguages.AnyAsync(ugpsl => ugpsl.UserId == id);
+
+            if (userHasFavoriteProductionCountries)
+            {
+                // Busca os relacionamentos entre o usuário e os países de produção
+                var userProductionCountries = await _context.UserGeneralProfileProductionCountries
+                    .Where(ugppc => ugppc.UserId == id)
+                    .ToListAsync();
+
+                // Remove os relacionamentos, se existirem
+                if (userProductionCountries.Any())
+                {
+                    _context.UserGeneralProfileProductionCountries.RemoveRange(userProductionCountries);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            if (userHasFavoriteSpokenLanguages)
+            {
+                // Busca os relacionamentos entre o usuário e os idiomas falados
+                var userSpokenLanguages = await _context.UserGeneralProfileSpokenLanguages
+                    .Where(ugpsl => ugpsl.UserId == id)
+                    .ToListAsync();
+                // Remove os relacionamentos, se existirem
+                if (userSpokenLanguages.Any())
+                {
+                    _context.UserGeneralProfileSpokenLanguages.RemoveRange(userSpokenLanguages);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            HashSet<int> productionCountryIds = new HashSet<int>();
+            HashSet<int> spokenLanguageIds = new HashSet<int>();
+            foreach (var extraAnswer in extraAnswers)
+            {
+                foreach (var productionCountry in extraAnswer.ExtraAnswerProductionCountries)
+                {
+                    // Adiciona os IDs dos países de produção ao conjunto
+                    productionCountryIds.Add(productionCountry.ProductionCountryId);
+                }
+
+                foreach (var spokenLanguage in extraAnswer.ExtraAnswerSpokenLanguages)
+                {
+                    // Adiciona os IDs dos idiomas falados ao conjunto
+                    spokenLanguageIds.Add(spokenLanguage.SpokenLanguageId);
+                }
+            }
+
+            // Adiciona os países de produção ao perfil geral do usuário
+            foreach (var productionCountryId in productionCountryIds)
+            {
+                _context.UserGeneralProfileProductionCountries.Add(new UserGeneralProfileProductionCountry
+                {
+                    UserId = id,
+                    ProductionCountryId = productionCountryId
+                });
+            }
+            // Adiciona os idiomas falados ao perfil geral do usuário
+            foreach (var spokenLanguageId in spokenLanguageIds)
+            {
+                _context.UserGeneralProfileSpokenLanguages.Add(new UserGeneralProfileSpokenLanguage
+                {
+                    UserId = id,
+                    SpokenLanguageId = spokenLanguageId
+                });
+            }
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task PutDailyProfileExtraPreferencesAsync(List<int> extraAnswerIds, string id)
+        {
+            if (extraAnswerIds is null || !extraAnswerIds.Any())
+                throw new ArgumentException("No answer IDs provided.");
+
+            // Buscar todas as respostas válidas de uma vez
+            var extraAnswers = await _context.ExtraAnswers
+                .Where(ea => extraAnswerIds.Contains(ea.Id))
+                .Include(ea => ea.ExtraAnswerProductionCountries)
+                .Include(ea => ea.ExtraAnswerSpokenLanguages)
+                .ToListAsync();
+
+            // Buscar o usuário
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user is null)
+                throw new Exception("User not found.");
+
+            var oldUserDailyProfile = _context.UserDailyProfiles.FirstOrDefault(udp => udp.UserId == id && udp.IsTheLatest);
+            if (oldUserDailyProfile is not null)
+            {
+                // Marca o perfil diário antigo como não sendo o mais recente
+                oldUserDailyProfile.IsTheLatest = false;
+                _context.UserDailyProfiles.Update(oldUserDailyProfile);
+            }
+
+            var newUserDailyProfile = new UserDailyProfile
+            {
+                UserId = id,
+                MinYear = extraAnswers.Max(e => e.MinYear),
+                MaxYear = extraAnswers.Min(e => e.MaxYear),
+                MinVoteAverage = extraAnswers.Max(e => e.MinVoteAverage),
+                MaxVoteAverage = extraAnswers.Min(e => e.MaxVoteAverage),
+                MinVoteCount = extraAnswers.Max(e => e.MinVoteCount),
+                MaxVoteCount = extraAnswers.Min(e => e.MaxVoteCount),
+                MinDuration = extraAnswers.Max(e => e.MinDuration),
+                MaxDuration = extraAnswers.Min(e => e.MaxDuration),
+                UserDailyProfileClusters = new List<UserDailyProfileCluster>(),
+                UserDailyProfileSpokenLanguages = new List<UserDailyProfileSpokenLanguage>(),
+                UserDailyProfileProductionCountries = new List<UserDailyProfileProductionCountry>(),
+                Timestamp = DateTime.UtcNow,
+                IsTheLatest = true
+            };
+
+            HashSet<int> productionCountryIds = new HashSet<int>();
+            HashSet<int> spokenLanguageIds = new HashSet<int>();
+            foreach (var extraAnswer in extraAnswers)
+            {
+                foreach (var productionCountry in extraAnswer.ExtraAnswerProductionCountries)
+                {
+                    // Adiciona os IDs dos países de produção ao conjunto
+                    productionCountryIds.Add(productionCountry.ProductionCountryId);
+                }
+
+                foreach (var spokenLanguage in extraAnswer.ExtraAnswerSpokenLanguages)
+                {
+                    // Adiciona os IDs dos idiomas falados ao conjunto
+                    spokenLanguageIds.Add(spokenLanguage.SpokenLanguageId);
+                }
+            }
+
+            // Adiciona os países de produção ao perfil geral do usuário
+            foreach (var productionCountryId in productionCountryIds)
+            {
+                newUserDailyProfile.UserDailyProfileProductionCountries.Add(new UserDailyProfileProductionCountry
+                {
+                    UserDailyProfileId = newUserDailyProfile.Id,
+                    ProductionCountryId = productionCountryId
+                });
+            }
+            // Adiciona os idiomas falados ao perfil geral do usuário
+            foreach (var spokenLanguageId in spokenLanguageIds)
+            {
+                newUserDailyProfile.UserDailyProfileSpokenLanguages.Add(new UserDailyProfileSpokenLanguage
+                {
+                    UserDailyProfileId = newUserDailyProfile.Id,
+                    SpokenLanguageId = spokenLanguageId
+                });
+            }
+
+            _context.Add(newUserDailyProfile);
+
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task PutDailyProfileThemePreferencesAsync(List<int> themeAnswerIds, string id)
+        {
+            // Pega a resposta de tema, seus gêneros e palavras-chave equivalentes.
+            var themeAnswers = await _context.ThemeAnswers
+                .Where(ta => themeAnswerIds.Contains(ta.Id))
+                .Include(ta => ta.ThemeAnswerGenres)
+                    .ThenInclude(tag => tag.Genre)
+                .Include(ta => ta.ThemeAnswerKeywords)
+                    .ThenInclude(tak => tak.Keyword)
+                .ToListAsync();
+
+
+            var genres = new HashSet<string>();
+            var keywords = new HashSet<string>();
+
+            // Adiciona os gêneros e palavras-chave das respostas de tema (VER UMA FORMA DE NÃO ADICIONAR OS DUPLICADOS)
+            foreach (var answer in themeAnswers)
+            {
+                foreach (var genre in answer.ThemeAnswerGenres.Select(g => g.Genre.Name))
+                    genres.Add(genre);
+                foreach (var keyword in answer.ThemeAnswerKeywords.Select(k => k.Keyword.Name))
+                    keywords.Add(keyword);
+            }
+
+
+            // Cria a estrutura que a IA vai usar para comparar
+            var inputData = new MovieData
+            {
+                Genres = string.Join(",", genres),
+                Keywords = string.Join(",", keywords),
+                Title = "", // Pode ser vazio
+                Overview = "", // Pode ser vazio
+                OriginalLanguage = "", // Pode ser vazio
+                ProductionCountries = "", // Pode ser vazio
+                ProductionCompanies = "", // Pode ser vazio
+            };
+
+            // Chama o método do service da IA que faz a vetorização e comparação dos filmes com base nos parâmetros
+            var closestClusterIds = await _lumeAIService.GetClosestClusters(inputData);
+
+            var latestUserDailyProfile = await _context.UserDailyProfiles
+                .Where(udp => udp.UserId == id && udp.IsTheLatest)
+                .FirstOrDefaultAsync();
+
+            // Salva os clusters mais próximos no perfil geral do usuário
+            _context.UserDailyProfileClusters.AddRange(closestClusterIds.Select(c => new UserDailyProfileCluster
+            {
+                UserDailyProfileId = latestUserDailyProfile.Id,
+                ClusterId = c.Id,
+            }));
 
             await _context.SaveChangesAsync();
         }

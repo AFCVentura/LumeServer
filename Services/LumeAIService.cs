@@ -29,36 +29,34 @@ namespace LumeServer.Services
             _trainedModel = _mlContext.Model.Load(fileStream, out _);
         }
 
-        public List<int> GetClosestClusters(MovieData input)
+        public async Task<List<ClusterDistanceDTO>> GetClosestClusters(MovieData input, int topN = 3)
         {
             if (_trainedModel == null)
                 LoadModel();
 
-            
+            var clusters = await _context.Clusters.ToListAsync();
 
             var inputData = _mlContext.Data.LoadFromEnumerable(new[] { input });
-            var transformedData = _trainedModel.Transform(inputData);
+
+            var transformed = _trainedModel.Transform(inputData);
 
             var prediction = _mlContext.Data
-                .CreateEnumerable<MovieClusterPrediction>(transformedData, reuseRowObject: false)
+                .CreateEnumerable<MovieClusterPrediction>(transformed, reuseRowObject: false)
                 .First();
 
             var inputFeatures = prediction.Features;
 
-            var clusters = _context.Clusters.AsNoTracking().ToList();
-
-            var closest = clusters
-                .Select(c => new
+            var nearestClusters = clusters
+                .Select(c => new ClusterDistanceDTO
                 {
-                    ClusterId = c.Id,
+                    Id = c.Id,
                     Distance = EuclideanDistance(inputFeatures, c.CentroidVector)
                 })
                 .OrderBy(x => x.Distance)
-                .Take(3)
-                .Select(x => x.ClusterId)
+                .Take(topN)
                 .ToList();
 
-            return closest;
+            return nearestClusters;
         }
 
 
