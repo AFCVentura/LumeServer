@@ -2,12 +2,14 @@
 using LumeServer.Models.Movie;
 using LumeServer.Models.Question;
 using LumeServer.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LumeServer.Controllers
 {
     [ApiController]
     [Route("api/v1/movies")]
+    [Authorize]
     public class MovieController : ControllerBase
     {
         private MovieService _service;

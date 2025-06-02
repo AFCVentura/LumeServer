@@ -2,6 +2,7 @@
 using LumeServer.Models.Movie;
 using LumeServer.Models.Question;
 using LumeServer.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LumeServer.Controllers
@@ -126,6 +127,7 @@ namespace LumeServer.Controllers
             }
         }
         // Usuário envia alternativas de tema escolhidas (no uso do dia a dia)
+        [Authorize]
         [HttpPost("daily-theme-answers")]
         public async Task<ActionResult> PostChosenDailyThemeAnswers([FromBody] ChosenThemeAnswersRequestDTO request)
         {
@@ -141,6 +143,7 @@ namespace LumeServer.Controllers
             }
         }
         // Usuário envia alternativas extras escolhidas (no uso do dia a dia)
+        [Authorize]
         [HttpPost("daily-extra-answers")]
         public async Task<ActionResult> PostChosenDailyExtraAnswers([FromBody] ChosenExtraAnswersRequestDTO request)
         {

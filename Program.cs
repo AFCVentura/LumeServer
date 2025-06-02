@@ -4,6 +4,7 @@ using LumeServer.EmailSender;
 using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 
 namespace LumeServer
@@ -90,7 +91,37 @@ namespace LumeServer
 
             // Aqui estamos adicionando o serviço de documentação da API com Swagger, podemos deixar por enquanto.
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Lume API", Version = "v1" });
+
+                // Adiciona a definição do esquema de segurança
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Digite seu token JWT.\n\nExemplo: abc123def456"
+                });
+
+                // Aplica a definição globalmente para todos os endpoints
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        new string[] {}
+                    }
+                });
+            });
 
             // Aqui estamos construindo a aplicação depois de fazer todas as configurações necessárias.
             var app = builder.Build();
