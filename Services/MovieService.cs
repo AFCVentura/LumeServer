@@ -108,6 +108,7 @@ namespace LumeServer.Services
         #endregion
         public async Task<List<MovieDetailsDTO>> GetRecommendedMovies(string id)
         {
+            Random rnd = new Random();
             // Buscando ids dos clusters
 
             // Busca os ids dos UserGeneralProfileCluster, ou seja, dos clusters que se encaixam melhor no perfil inicial do usuário
