@@ -746,5 +746,38 @@ namespace LumeServer.Services
             return recommendedMovies;
 
         }
+
+        internal async Task PostChosenRecommendedMovies(string id, List<UserWatchedOrLikedMovieDTO> movieIds)
+        {
+            HashSet<Movie> movies = new HashSet<Movie>();
+            foreach (var movie in movieIds)
+            {
+                var movieEntity = await _context.Movies.AsNoTracking().FirstOrDefaultAsync(m => m.Id == movie.MovieId);
+                if (movieEntity is null)
+                {
+                    throw new Exception($"Filme com ID {movie.MovieId} não encontrado.");
+                }
+
+                if (movie.Watched)
+                {
+                    _context.WatchedLists.Add(new WatchedList
+                    {
+                        UserId = id,
+                        MovieId = movie.MovieId
+                    });
+                }
+                else if (movie.Liked)
+                {
+                    _context.WishLists.Add(new WishList
+                    {
+                        UserId = id,
+                        MovieId = movie.MovieId,
+                        CreatedAt = DateTime.UtcNow
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
+        }
     }
 }

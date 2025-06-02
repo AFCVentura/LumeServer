@@ -80,6 +80,21 @@ namespace LumeServer.Controllers
             }
         }
 
+        [HttpPost("recommended-movies/{id}")]
+        public async Task<ActionResult> PostChosenRecommendedMovies([FromRoute] string id, [FromBody] List<UserWatchedOrLikedMovieDTO> movieIds)
+        {
+            try
+            {
+                await _service.PostChosenRecommendedMovies(id, movieIds);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
+            }
+        }
+
         #endregion
     }
 }
