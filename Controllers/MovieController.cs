@@ -63,5 +63,23 @@ namespace LumeServer.Controllers
             }
         }
         #endregion
+
+        #region Métodos da recomendação
+        [HttpGet("recommended-movies/{id}")]
+        public async Task<ActionResult<List<MovieDetailsDTO>>> GetRecommendedMovies([FromRoute] string id)
+        {
+            try
+            {
+                var result = await _service.GetRecommendedMovies(id);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
+            }
+        }
+
+        #endregion
     }
-    }
+}
