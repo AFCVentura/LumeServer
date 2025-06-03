@@ -1,11 +1,8 @@
 ﻿using LumeServer.Data;
-using LumeServer.DTOs.LumeAI;
-using LumeServer.Models.Movie;
-using LumeServer.Models.Question;
 using LumeServer.EmailSender;
 using LumeServer.Models.User;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using System.Net;
 using System.Security.Claims;
 
 namespace LumeServer.Services
@@ -57,21 +54,21 @@ namespace LumeServer.Services
         }
 
         // Forgot Password
-        public async Task<bool> ForgotPasswordAsync(string email, string baseUrl)
+        public async Task<bool> ForgotPasswordAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) return false;
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var resetLink = $"{baseUrl}?email={email}&token={Uri.EscapeDataString(token)}";
+            var encodedToken = WebUtility.UrlEncode(token);
 
-            await _emailSender.SendEmailAsync(
-                email,
-                "Redefinição de Senha - LUME",
-                $"Clique no link para redefinir sua senha: {resetLink}");
+            var mensagem = $"Use o código abaixo para redefinir sua senha no app: {encodedToken}";
+
+            await _emailSender.SendEmailAsync(user.Email, "Redefinição de Senha Lume", mensagem);
 
             return true;
         }
+
 
         // Reset Password
         public async Task<IdentityResult> ResetPasswordAsync(string email, string token, string newPassword)
@@ -79,7 +76,9 @@ namespace LumeServer.Services
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) return IdentityResult.Failed();
 
-            return await _userManager.ResetPasswordAsync(user, token, newPassword);
+            var decodedToken = WebUtility.UrlDecode(token);
+            return await _userManager.ResetPasswordAsync(user, decodedToken, newPassword);
+
         }
 
         // Delete Accounts
@@ -96,6 +95,11 @@ namespace LumeServer.Services
         }
 
 
+        public async Task<User?> GetUserByClaimsAsync(ClaimsPrincipal userClaims)
+        {
+            return await _userManager.GetUserAsync(userClaims);
+        }
+
 
 
         // Exemplo de método que manipula o banco de dados
@@ -108,15 +112,6 @@ namespace LumeServer.Services
             var users = _context.Users.ToList();
             // Aqui vamos transformar a lista de usuários em uma string e retornar.
             return users;
-        }
-
-
-
-
-
-        public async Task<User?> GetUserByClaimsAsync(ClaimsPrincipal userClaims)
-        {
-            return await _userManager.GetUserAsync(userClaims);
         }
     }
 }

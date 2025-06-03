@@ -84,11 +84,11 @@ namespace LumeServer.Controllers
         [HttpPost("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] string email)
         {
-            var baseUrl = $"{Request.Scheme}://{Request.Host}/reset-password"; // ou configure no appsettings
-            var result = await _service.ForgotPasswordAsync(email, baseUrl);
+            var result = await _service.ForgotPasswordAsync(email);
 
             if (!result) return NotFound("Usuário não encontrado");
-            return Ok("E-mail de redefinição enviado.");
+
+            return Ok("Código de redefinição enviado para seu e-mail.");
         }
 
         [HttpPost("reset-password")]
