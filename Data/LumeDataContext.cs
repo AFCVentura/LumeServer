@@ -44,6 +44,10 @@ namespace LumeServer.Data
         public DbSet<ThemeAnswer> ThemeAnswers { get; set; }
         public DbSet<ThemeAnswerGenre> ThemeAnswerGenres { get; set; }
         public DbSet<ThemeAnswerKeyword> ThemeAnswerKeywords { get; set; }
+        public DbSet<UserGeneralProfileProductionCountry> UserGeneralProfileProductionCountries { get; set; }
+        public DbSet<UserGeneralProfileSpokenLanguage> UserGeneralProfileSpokenLanguages { get; set; }
+        public DbSet<UserDailyProfileProductionCountry> UserDailyProfileProductionCountries { get; set; }
+        public DbSet<UserDailyProfileSpokenLanguage> UserDailyProfileSpokenLanguages { get; set; }
 
         #endregion
 
@@ -73,6 +77,10 @@ namespace LumeServer.Data
             modelBuilder.ApplyConfiguration(new UserDailyProfileMap());
             modelBuilder.ApplyConfiguration(new UserDailyProfileClusterMap());
             modelBuilder.ApplyConfiguration(new UserGeneralProfileClusterMap());
+            modelBuilder.ApplyConfiguration(new UserGeneralProfileProductionCountryMap());
+            modelBuilder.ApplyConfiguration(new UserGeneralProfileSpokenLanguageMap());
+            modelBuilder.ApplyConfiguration(new UserDailyProfileProductionCountryMap());
+            modelBuilder.ApplyConfiguration(new UserDailyProfileSpokenLanguageMap());
 
             // Questões
             modelBuilder.ApplyConfiguration(new ExtraQuestionMap());

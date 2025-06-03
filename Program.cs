@@ -4,6 +4,7 @@ using LumeServer.EmailSender;
 using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace LumeServer
 {
@@ -30,6 +31,13 @@ namespace LumeServer
                 });
             });
 
+            // Configura o de serialização JSON para ignorar ciclos de referência
+            builder.Services.AddControllers()
+                .AddJsonOptions(opt =>
+                {
+                    opt.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+                });
+
             // Aqui estamos dizendo que essa aplicação vai usar Controllers (porque tem como fazer sem eles também).
             builder.Services.AddControllers();
 
@@ -37,8 +45,11 @@ namespace LumeServer
             var connectionString =
                 builder.Configuration.GetConnectionString("CONNECTION_STRING");
 
-            // Aqui estamos registrando o UserService com injeção de dependência.
+            // Aqui estamos registrando os Services com injeção de dependência.
             builder.Services.AddScoped<UserService>();
+            builder.Services.AddScoped<LumeAIService>();
+            builder.Services.AddScoped<QuestionService>();
+            builder.Services.AddScoped<MovieService>();
 
             // Registra o DbContext com injeção de dependência
             builder.Services.AddDbContext<LumeDataContext>(options =>

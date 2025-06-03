@@ -8,5 +8,11 @@
         public int ThemeQuestionId { get; set; }
         public ICollection<ThemeAnswerGenre> ThemeAnswerGenres { get; set; }
         public ICollection<ThemeAnswerKeyword> ThemeAnswerKeywords { get; set; }
+
+        public ThemeAnswer()
+        {
+            ThemeAnswerGenres = new List<ThemeAnswerGenre>();
+            ThemeAnswerKeywords = new List<ThemeAnswerKeyword>();
+        }
     }
 }

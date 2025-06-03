@@ -24,6 +24,23 @@ namespace LumeServer.Data.Mappings.Question
                         .WithOne(easl => easl.ExtraAnswer)
                         .HasForeignKey(easl => easl.ExtraAnswerId)
                         .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Property(ea => ea.MinVoteAverage)
+                   .HasDefaultValue(0.0f);
+            builder.Property(ea => ea.MaxVoteAverage)
+                   .HasDefaultValue(10.1f);
+            builder.Property(ea => ea.MinVoteCount)
+                   .HasDefaultValue(0);
+            builder.Property(ea => ea.MaxVoteCount)
+                   .HasDefaultValue(1000000);
+            builder.Property(ea => ea.MinYear)
+                   .HasDefaultValue(0);
+            builder.Property(ea => ea.MaxYear)
+                   .HasDefaultValue(5000);
+            builder.Property(u => u.MinDuration)
+                   .HasDefaultValue(0);
+            builder.Property(u => u.MaxDuration)
+                   .HasDefaultValue(1000);
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using LumeServer.Models.User;
+﻿using LumeServer.DTOs;
+using LumeServer.Models.Movie;
+using LumeServer.Models.Question;
+using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +10,7 @@ namespace LumeServer.Controllers
 {
     // Essa é a classe Controller, ela é responsável por receber as requisições e retornar as respostas.
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/v1/users")]
     public class UserController : ControllerBase
     {
         private UserService _service;
@@ -16,6 +19,7 @@ namespace LumeServer.Controllers
         {
             _service = service;
         }
+
 
         // Exemplo de action (método que recebe uma requisição)
         // Esse método lida com a url /api/user
@@ -26,6 +30,8 @@ namespace LumeServer.Controllers
             return _service.GetAllUsers();
         }
 
+
+        #region Métodos de autenticação
         [HttpPost("logout")]
         [Authorize]
         public async Task<IActionResult> Logout()
@@ -97,7 +103,7 @@ namespace LumeServer.Controllers
 
             return Ok("Conta deletada com sucesso.");
         }
-
+        #endregion
 
     }
 }

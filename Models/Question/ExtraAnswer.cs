@@ -10,9 +10,17 @@
         public int MaxVoteCount { get; set; }
         public int MinYear { get; set; }
         public int MaxYear { get; set; }
+        public int MinDuration { get; set; }
+        public int MaxDuration { get; set; }
         public ExtraQuestion Question { get; set; }
         public int QuestionId { get; set; }
         public ICollection<ExtraAnswerProductionCountry> ExtraAnswerProductionCountries { get; set; }
         public ICollection<ExtraAnswerSpokenLanguage> ExtraAnswerSpokenLanguages { get; set; }
+
+        public ExtraAnswer()
+        {
+            ExtraAnswerProductionCountries = new List<ExtraAnswerProductionCountry>();
+            ExtraAnswerSpokenLanguages = new List<ExtraAnswerSpokenLanguage>();
+        }
     }
 }

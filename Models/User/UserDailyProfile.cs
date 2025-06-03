@@ -11,8 +11,12 @@
         public int MaxVoteCount { get; set; }
         public int MinYear { get; set; }
         public int MaxYear { get; set; }
+        public int MinDuration { get; set; }
+        public int MaxDuration { get; set; }
         public DateTime Timestamp { get; set; }
         public bool IsTheLatest { get; set; }
         public ICollection<UserDailyProfileCluster> UserDailyProfileClusters { get; set; }
+        public ICollection<UserDailyProfileSpokenLanguage> UserDailyProfileSpokenLanguages { get; set; }
+        public ICollection<UserDailyProfileProductionCountry> UserDailyProfileProductionCountries { get; set; }
     }
 }

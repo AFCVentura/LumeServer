@@ -7,18 +7,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Compile Remove="Migrations\20250425175650_FirstTestMigration.cs" />
-	  <Compile Remove="Migrations\20250425175650_FirstTestMigration.Designer.cs" />
-	  <Compile Remove="Migrations\LumeDataContextModelSnapshot.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.15" />
 		<PackageReference Include="microsoft.entityframeworkcore" Version="8.0.15" />
 		<PackageReference Include="microsoft.entityframeworkcore.design" Version="8.0.15">
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
+		<PackageReference Include="Microsoft.ML" Version="4.0.2" />
 		<PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.3" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 	</ItemGroup>
