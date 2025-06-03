@@ -95,6 +95,11 @@ namespace LumeServer.Services
         }
 
 
+        public async Task<User?> GetUserByClaimsAsync(ClaimsPrincipal userClaims)
+        {
+            return await _userManager.GetUserAsync(userClaims);
+        }
+
 
 
         // Exemplo de método que manipula o banco de dados
@@ -107,15 +112,6 @@ namespace LumeServer.Services
             var users = _context.Users.ToList();
             // Aqui vamos transformar a lista de usuários em uma string e retornar.
             return users;
-        }
-
-
-
-
-
-        public async Task<User?> GetUserByClaimsAsync(ClaimsPrincipal userClaims)
-        {
-            return await _userManager.GetUserAsync(userClaims);
         }
     }
 }
