@@ -21,13 +21,21 @@ namespace LumeServer.Controllers
 
         #region Métodos de perguntas e respostas
 
-        // Usuário recebe perguntas extras de perfil geral (com alternativas)
-        [HttpGet("general-extra-questions")]
-        public async Task<ActionResult<List<ExtraQuestion>>> GetGeneralExtraQuestions()
+        // Usuário recebe perguntas de perfil geral (com alternativas)
+        [HttpGet("general-questions")]
+        public async Task<ActionResult<List<ThemeAndExtraQuestions>>> GetGeneralExtraQuestions()
         {
             try
             {
-                return Ok(await _service.FindAllGeneralExtraQuestionsEagerAsync());
+                var extraQuestions = await _service.FindAllGeneralExtraQuestionsEagerAsync();
+                var themeQuestions = await _service.FindAllGeneralThemeQuestionsEagerAsync();
+
+                var result = new ThemeAndExtraQuestions
+                {
+                    ExtraQuestions = extraQuestions,
+                    ThemeQuestions = themeQuestions
+                };
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -36,43 +44,20 @@ namespace LumeServer.Controllers
             }
         }
 
-        // Usuário recebe perguntas de tema de perfil geral (com alternativas)
-        [HttpGet("general-theme-questions")]
-        public async Task<ActionResult<List<ThemeQuestion>>> GetGeneralThemeQuestions()
+        // Usuário recebe perguntas de perfil diário (com alternativas)
+        [HttpGet("daily-questions")]
+        public async Task<ActionResult<List<ThemeAndExtraQuestions>>> GetDailyExtraQuestions()
         {
             try
             {
-                return await _service.FindAllGeneralThemeQuestionsEagerAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
-                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
-            }
-        }
-
-        // Usuário recebe perguntas extras de perfil geral (com alternativas)
-        [HttpGet("daily-extra-questions")]
-        public async Task<ActionResult<List<ExtraQuestion>>> GetDailyExtraQuestions()
-        {
-            try
-            {
-                return Ok(await _service.FindAllDailyExtraQuestionsEagerAsync());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
-                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
-            }
-        }
-
-        // Enviar perguntas de tema de perfil geral (com alternativas)
-        [HttpGet("daily-theme-questions")]
-        public async Task<ActionResult<List<ThemeQuestion>>> GetDailyThemeQuestions()
-        {
-            try
-            {
-                return Ok(await _service.FindAllDailyThemeQuestionsEagerAsync());
+                var extraQuestions = await _service.FindAllDailyExtraQuestionsEagerAsync();
+                var themeQuestions = await _service.FindAllDailyThemeQuestionsEagerAsync();
+                var result = new ThemeAndExtraQuestions
+                {
+                    ExtraQuestions = extraQuestions,
+                    ThemeQuestions = themeQuestions
+                };
+                return Ok(result);
             }
             catch (Exception ex)
             {
