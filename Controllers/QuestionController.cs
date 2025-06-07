@@ -2,6 +2,7 @@
 using LumeServer.Models.Movie;
 using LumeServer.Models.Question;
 using LumeServer.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LumeServer.Controllers
@@ -20,13 +21,21 @@ namespace LumeServer.Controllers
 
         #region Métodos de perguntas e respostas
 
-        // Usuário recebe perguntas extras de perfil geral (com alternativas)
-        [HttpGet("general-extra-questions")]
-        public async Task<ActionResult<List<ExtraQuestion>>> GetGeneralExtraQuestions()
+        // Usuário recebe perguntas de perfil geral (com alternativas)
+        [HttpGet("general-questions")]
+        public async Task<ActionResult<List<ThemeAndExtraQuestions>>> GetGeneralExtraQuestions()
         {
             try
             {
-                return Ok(await _service.FindAllGeneralExtraQuestionsEagerAsync());
+                var extraQuestions = await _service.FindAllGeneralExtraQuestionsEagerAsync();
+                var themeQuestions = await _service.FindAllGeneralThemeQuestionsEagerAsync();
+
+                var result = new ThemeAndExtraQuestions
+                {
+                    ExtraQuestions = extraQuestions,
+                    ThemeQuestions = themeQuestions
+                };
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -35,43 +44,20 @@ namespace LumeServer.Controllers
             }
         }
 
-        // Usuário recebe perguntas de tema de perfil geral (com alternativas)
-        [HttpGet("general-theme-questions")]
-        public async Task<ActionResult<List<ThemeQuestion>>> GetGeneralThemeQuestions()
+        // Usuário recebe perguntas de perfil diário (com alternativas)
+        [HttpGet("daily-questions")]
+        public async Task<ActionResult<List<ThemeAndExtraQuestions>>> GetDailyExtraQuestions()
         {
             try
             {
-                return await _service.FindAllGeneralThemeQuestionsEagerAsync();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
-                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
-            }
-        }
-
-        // Usuário recebe perguntas extras de perfil geral (com alternativas)
-        [HttpGet("daily-extra-questions")]
-        public async Task<ActionResult<List<ExtraQuestion>>> GetDailyExtraQuestions()
-        {
-            try
-            {
-                return Ok(await _service.FindAllDailyExtraQuestionsEagerAsync());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
-                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
-            }
-        }
-
-        // Enviar perguntas de tema de perfil geral (com alternativas)
-        [HttpGet("daily-theme-questions")]
-        public async Task<ActionResult<List<ThemeQuestion>>> GetDailyThemeQuestions()
-        {
-            try
-            {
-                return Ok(await _service.FindAllDailyThemeQuestionsEagerAsync());
+                var extraQuestions = await _service.FindAllDailyExtraQuestionsEagerAsync();
+                var themeQuestions = await _service.FindAllDailyThemeQuestionsEagerAsync();
+                var result = new ThemeAndExtraQuestions
+                {
+                    ExtraQuestions = extraQuestions,
+                    ThemeQuestions = themeQuestions
+                };
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -95,13 +81,14 @@ namespace LumeServer.Controllers
             }
         }
 
-        // Usuário envia alternativas de tema escolhidas (na criação da conta) 
-        [HttpPost("general-theme-answers")]
-        public async Task<ActionResult> PostChosenGeneralThemeAnswers([FromBody] ChosenThemeAnswersAndMoviesRequestDTO request)
+        // Usuário envia alternativas de tema e extras escolhidas (na criação da conta) 
+        [HttpPost("general-answers/{id}")]
+        public async Task<ActionResult> PostChosenGeneralThemeAnswers([FromRoute] string id, [FromBody] ChosenThemeAndExtraAnswersAndMoviesRequestDTO request)
         {
             try
             {
-                await _service.PostChosenThemeAnswersAndMoviesAsync(request.ThemeAnswerIds, request.ChosenMovieIds, request.Id);
+                await _service.PutGeneralProfileExtraPreferencesAsync(request.ExtraAnswerIds, id);
+                await _service.PostChosenThemeAnswersAndMoviesAsync(request.ThemeAnswerIds, request.ChosenMovieIds, id);
                 return Ok();
             }
             catch (Exception ex)
@@ -110,13 +97,16 @@ namespace LumeServer.Controllers
                 return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
             }
         }
-        // Usuário envia alternativas extras escolhidas (na criação da conta)
-        [HttpPost("general-extra-answers")]
-        public async Task<ActionResult> PostChosenGeneralExtraAnswers([FromBody] ChosenExtraAnswersRequestDTO request)
+
+        // Usuário envia alternativas de tema e extras escolhidas (no uso do dia a dia)
+        [Authorize]
+        [HttpPost("daily-answers/{id}")]
+        public async Task<ActionResult> PostChosenDailyThemeAnswers([FromRoute] string id, [FromBody] ChosenThemeAndExtraAnswersRequestDTO request)
         {
             try
             {
-                await _service.PutGeneralProfileExtraPreferencesAsync(request.ExtraAnswerIds, request.Id);
+                await _service.PutDailyProfileExtraPreferencesAsync(request.ExtraAnswerIds, id);
+                await _service.PutDailyProfileThemePreferencesAsync(request.ThemeAnswerIds, id);
                 return Ok();
             }
             catch (Exception ex)
@@ -125,36 +115,7 @@ namespace LumeServer.Controllers
                 return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
             }
         }
-        // Usuário envia alternativas de tema escolhidas (no uso do dia a dia)
-        [HttpPost("daily-theme-answers")]
-        public async Task<ActionResult> PostChosenDailyThemeAnswers([FromBody] ChosenThemeAnswersRequestDTO request)
-        {
-            try
-            {
-                await _service.PutDailyProfileThemePreferencesAsync(request.ThemeAnswerIds, request.Id);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
-                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
-            }
-        }
-        // Usuário envia alternativas extras escolhidas (no uso do dia a dia)
-        [HttpPost("daily-extra-answers")]
-        public async Task<ActionResult> PostChosenDailyExtraAnswers([FromBody] ChosenExtraAnswersRequestDTO request)
-        {
-            try
-            {
-                await _service.PutDailyProfileExtraPreferencesAsync(request.ExtraAnswerIds, request.Id);
-                return Ok();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
-                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
-            }
-        }
+
 
         #endregion
     }

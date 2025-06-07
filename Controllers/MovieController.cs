@@ -2,12 +2,14 @@
 using LumeServer.Models.Movie;
 using LumeServer.Models.Question;
 using LumeServer.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LumeServer.Controllers
 {
     [ApiController]
     [Route("api/v1/movies")]
+    [Authorize]
     public class MovieController : ControllerBase
     {
         private MovieService _service;
@@ -63,5 +65,38 @@ namespace LumeServer.Controllers
             }
         }
         #endregion
+
+        #region Métodos da recomendação
+        [HttpGet("recommended-movies/{id}")]
+        public async Task<ActionResult<List<MovieDetailsDTO>>> GetRecommendedMovies([FromRoute] string id)
+        {
+            try
+            {
+                var result = await _service.GetRecommendedMovies(id);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
+            }
+        }
+
+        [HttpPost("recommended-movies/{id}")]
+        public async Task<ActionResult> PostChosenRecommendedMovies([FromRoute] string id, [FromBody] List<UserWatchedOrLikedMovieDTO> movieIds)
+        {
+            try
+            {
+                await _service.PostChosenRecommendedMovies(id, movieIds);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
+            }
+        }
+
+        #endregion
     }
-    }
+}

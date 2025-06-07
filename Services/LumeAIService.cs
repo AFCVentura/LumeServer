@@ -29,7 +29,7 @@ namespace LumeServer.Services
             _trainedModel = _mlContext.Model.Load(fileStream, out _);
         }
 
-        public async Task<List<ClusterDistanceDTO>> GetClosestClusters(MovieData input, int topN = 3)
+        public async Task<List<ClusterDistanceDTO>> GetClosestClusters(MovieData input, int topN = 5)
         {
             if (_trainedModel == null)
                 LoadModel();
