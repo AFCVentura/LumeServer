@@ -1,4 +1,5 @@
 ﻿using LumeServer.Data;
+using LumeServer.DTOs;
 using LumeServer.DTOs.LumeAI;
 using LumeServer.Models.Movie;
 using LumeServer.Models.Question;
@@ -51,13 +52,48 @@ namespace LumeServer.Services
 
 
         // Enviar 20 filmes famosos (com mais de 15 mil votos) aleatórios
-        public async Task<List<Movie>> GetFamousMoviesAsync()
+        public async Task<List<MovieDetailsDTO>> GetFamousMoviesAsync()
         {
             return await _context.Movies
                 .AsNoTracking()
                 .Where(m => m.VoteCount > 15000)
                 .Include(m => m.MovieGenres)
                     .ThenInclude(mg => mg.Genre)
+                .Include(m => m.MovieKeywords)
+                    .ThenInclude(mk => mk.Keyword)
+                .Include(m => m.MovieProductionCountries)
+                    .ThenInclude(mpc => mpc.ProductionCountry)
+                .Include(m => m.MovieSpokenLanguages)
+                    .ThenInclude(mpc => mpc.SpokenLanguage)
+                .Include(m => m.MovieProductionCompanies)
+                    .ThenInclude(mpc => mpc.ProductionCompany)
+                .Select(m => new MovieDetailsDTO
+                {
+                    Id = m.Id,
+                    Title = m.Title,
+                    VoteAverage = m.VoteAverage,
+                    VoteCount = m.VoteCount,
+                    Status = m.Status,
+                    ReleaseDate = m.ReleaseDate,
+                    Revenue = m.Revenue,
+                    Runtime = m.Runtime,
+                    Adult = m.Adult,
+                    BackdropPath = m.BackdropPath,
+                    Budget = m.Budget,
+                    Homepage = m.Homepage,
+                    ImdbId = m.ImdbId,
+                    OriginalLanguage = m.OriginalLanguage,
+                    OriginalTitle = m.OriginalTitle,
+                    Overview = m.Overview,
+                    Popularity = m.Popularity,
+                    PosterPath = m.PosterPath,
+                    Tagline = m.Tagline,
+                    Genres = m.MovieGenres.Select(mg => mg.Genre.Name).ToList(),
+                    Keywords = m.MovieKeywords.Select(mk => mk.Keyword.Name).ToList(),
+                    ProductionCompanies = m.MovieProductionCompanies.Select(mpc => mpc.ProductionCompany.Name).ToList(),
+                    ProductionCountries = m.MovieProductionCountries.Select(mpc => mpc.ProductionCountry.Name).ToList(),
+                    SpokenLanguages = m.MovieSpokenLanguages.Select(msl => msl.SpokenLanguage.Name).ToList()
+                })
                 .OrderBy(x => EF.Functions.Random()) // Aleatório
                 .Take(20)
                 .ToListAsync();

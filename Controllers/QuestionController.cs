@@ -68,7 +68,7 @@ namespace LumeServer.Controllers
 
         // Usuário recebe 20 filmes famosos (com mais de 15 mil votos) aleatórios
         [HttpGet("famous-movies")]
-        public async Task<ActionResult<List<Movie>>> GetFamousMovies()
+        public async Task<ActionResult<List<MovieDetailsDTO>>> GetFamousMovies()
         {
             try
             {
