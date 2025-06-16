@@ -2,6 +2,7 @@
 using LumeServer.EmailSender;
 using LumeServer.Models.User;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Security.Claims;
 
@@ -59,26 +60,62 @@ namespace LumeServer.Services
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null) return false;
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var encodedToken = WebUtility.UrlEncode(token);
+            // Gera o token numérico de 6 dígitos
+            var random = new Random();
+            var token = random.Next(100000, 999999).ToString();
 
-            var mensagem = $"Use o código abaixo para redefinir sua senha no app: {encodedToken}";
+            // Salva o token numérico no banco 
+            await _context.PasswordResetTokens.AddAsync(new PasswordResetToken
+            {
+                Email = email,
+                Token = token,
+                Expiration = DateTime.UtcNow.AddMinutes(10)  // Token expira em 10 minutos
+            });
+            await _context.SaveChangesAsync();
 
-            await _emailSender.SendEmailAsync(user.Email, "Redefinição de Senha Lume", mensagem);
+            // Envia o token por e-mail
+            await _emailSender.SendEmailAsync(
+                email,
+                "Código de Redefinição de Senha - LUME",
+                $"Seu código de redefinição de senha é: <b>{token}</b>"
+            );
 
             return true;
         }
 
 
         // Reset Password
-        public async Task<IdentityResult> ResetPasswordAsync(string email, string token, string newPassword)
+        public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
         {
+            // Verifica se o token existe, é do email certo e ainda está válido
+            var tokenEntry = await _context.PasswordResetTokens
+                .FirstOrDefaultAsync(t => t.Email == email && t.Token == token && t.Expiration > DateTime.UtcNow);
+
+            if (tokenEntry == null)
+                return false;
+
             var user = await _userManager.FindByEmailAsync(email);
-            if (user == null) return IdentityResult.Failed();
+            if (user == null)
+                return false;
 
-            var decodedToken = WebUtility.UrlDecode(token);
-            return await _userManager.ResetPasswordAsync(user, decodedToken, newPassword);
+            // Remove a senha antiga só se existir
+            if (await _userManager.HasPasswordAsync(user))
+            {
+                var removePasswordResult = await _userManager.RemovePasswordAsync(user);
+                if (!removePasswordResult.Succeeded)
+                    return false; // Falha ao remover a senha, aborta
+            }
 
+            // Adiciona a nova senha
+            var addPasswordResult = await _userManager.AddPasswordAsync(user, newPassword);
+            if (!addPasswordResult.Succeeded)
+                return false; // Falha ao adicionar a nova senha
+
+            // Apaga o token depois de usar
+            _context.PasswordResetTokens.Remove(tokenEntry);
+            await _context.SaveChangesAsync();
+
+            return true;
         }
 
         // Delete Accounts

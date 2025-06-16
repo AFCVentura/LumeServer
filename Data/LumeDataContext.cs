@@ -52,6 +52,9 @@ namespace LumeServer.Data
         #endregion
 
         #region Mapeamentos dos modelos
+
+        public DbSet<PasswordResetToken> PasswordResetTokens { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

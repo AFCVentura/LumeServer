@@ -4,7 +4,9 @@ using LumeServer.Models.Question;
 using LumeServer.Models.User;
 using LumeServer.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace LumeServer.Controllers
 {
@@ -14,24 +16,39 @@ namespace LumeServer.Controllers
     public class UserController : ControllerBase
     {
         private UserService _service;
+        private readonly UserManager<User> _userManager;
 
-        public UserController(UserService service)
+        public UserController(UserService service, UserManager<User> userManager)
         {
             _service = service;
-        }
-
-
-        // Exemplo de action (método que recebe uma requisição)
-        // Esse método lida com a url /api/user
-        [HttpGet]
-        [Authorize] // Exige que o usuário esteja autenticado
-        public List<User> GetAll()
-        {
-            return _service.GetAllUsers();
+            _userManager = userManager;
         }
 
 
         #region Métodos de autenticação
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMe()
+        {
+            // Pega o email do claim (caso não tenha o ID no token)
+            var email = User.FindFirstValue(ClaimTypes.Email);
+
+            if (email == null)
+                return Unauthorized();
+
+            // Busca o usuário no banco pelo email
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+                return NotFound();
+
+            return Ok(new
+            {
+                id = user.Id,
+                email = user.Email,
+                // Qualquer outro dado que quiser retornar
+            });
+        }
+
         [HttpPost("logout")]
         [Authorize]
         public async Task<IActionResult> Logout()
@@ -95,7 +112,7 @@ namespace LumeServer.Controllers
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto dto)
         {
             var result = await _service.ResetPasswordAsync(dto.Email, dto.Token, dto.NewPassword);
-            if (!result.Succeeded) return BadRequest("Erro ao redefinir senha.");
+            if (!result) return BadRequest("Erro ao redefinir senha.");
 
             return Ok("Senha redefinida com sucesso.");
         }
