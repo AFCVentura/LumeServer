@@ -56,7 +56,35 @@ namespace LumeServer.Controllers
         {
             try
             {
-                return Ok(await _service.FindWishListMovieById(userId, movieId));
+                return Ok(await _service.FindWishListMovieById(userId, movieId, true));
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro: {ex.Message}. Exceção interna: {ex.InnerException}");
+                return StatusCode(500, "Erro ao processar a solicitação. Por favor, tente novamente mais tarde.");
+            }
+        }
+
+        // TODO: Implementar o método de remover filme da wishlist e colocar na watchedlist
+        [HttpDelete("wishlist-movies/{userId}/wishlisted-movies/{movieId}")]
+        public async Task<ActionResult<MovieDetailsDTO>> DeleteWishListMovieDetails([FromRoute] string userId, [FromRoute] int movieId)
+        {
+            try
+            {
+                var movie = await _service.FindWishListMovieById(userId, movieId, false);
+                if (movie == null)
+                {
+                    return NotFound("Filme não encontrado na wishlist.");
+                }
+                bool result = await _service.DeleteWishListMovie(userId, movie);
+                if (result)
+                {
+                    return Ok("Filme removido da wishlist com sucesso.");
+                }
+                else
+                {
+                    return BadRequest("Erro ao remover o filme da wishlist.");
+                }
             }
             catch (Exception ex)
             {

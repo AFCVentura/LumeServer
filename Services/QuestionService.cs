@@ -95,7 +95,7 @@ namespace LumeServer.Services
                     SpokenLanguages = m.MovieSpokenLanguages.Select(msl => msl.SpokenLanguage.Name).ToList()
                 })
                 .OrderBy(x => EF.Functions.Random()) // Aleatório
-                .Take(20)
+                .Take(5)
                 .ToListAsync();
         }
 

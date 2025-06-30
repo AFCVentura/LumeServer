@@ -48,9 +48,12 @@ namespace LumeServer.Services
                 .ToListAsync();
         }
 
-        public async Task<MovieDetailsDTO> FindWishListMovieById(string userId, int movieId)
+        public async Task<MovieDetailsDTO> FindWishListMovieById(string userId, int movieId, bool wantToIncludeExtraInfo)
         {
-            MovieDetailsDTO? movieDetails = await _context.WishLists
+            MovieDetailsDTO? movieDetails = null;
+            if (wantToIncludeExtraInfo)
+            {
+                movieDetails = await _context.WishLists
             .Where(wl => wl.UserId == userId && wl.MovieId == movieId)
             .Include(wl => wl.Movie)
                 .ThenInclude(m => m.MovieGenres)
@@ -97,6 +100,41 @@ namespace LumeServer.Services
                 SpokenLanguages = wl.Movie.MovieSpokenLanguages.Select(msl => msl.SpokenLanguage.Name).ToList()
             })
             .FirstOrDefaultAsync();
+            }
+            else
+            {
+                movieDetails = await _context
+                    .WishLists
+                    .Where(wl => wl.UserId == userId && wl.MovieId == movieId)
+                    .Select(wl => new MovieDetailsDTO
+                    {
+                        Id = wl.Movie.Id,
+                        Title = wl.Movie.Title,
+                        VoteAverage = wl.Movie.VoteAverage,
+                        VoteCount = wl.Movie.VoteCount,
+                        Status = wl.Movie.Status,
+                        ReleaseDate = wl.Movie.ReleaseDate,
+                        Revenue = wl.Movie.Revenue,
+                        Runtime = wl.Movie.Runtime,
+                        Adult = wl.Movie.Adult,
+                        BackdropPath = wl.Movie.BackdropPath,
+                        Budget = wl.Movie.Budget,
+                        Homepage = wl.Movie.Homepage,
+                        ImdbId = wl.Movie.ImdbId,
+                        OriginalLanguage = wl.Movie.OriginalLanguage,
+                        OriginalTitle = wl.Movie.OriginalTitle,
+                        Overview = wl.Movie.Overview,
+                        Popularity = wl.Movie.Popularity,
+                        PosterPath = wl.Movie.PosterPath,
+                        Tagline = wl.Movie.Tagline,
+                        Genres = null,
+                        Keywords = null,
+                        ProductionCompanies = null,
+                        ProductionCountries = null,
+                        SpokenLanguages = null
+                    })
+                    .FirstOrDefaultAsync();
+            }
 
             if (movieDetails is null)
             {
@@ -105,6 +143,38 @@ namespace LumeServer.Services
 
             return movieDetails;
         }
+
+        public async Task<bool> DeleteWishListMovie(string userId, MovieDetailsDTO movie)
+        {
+            // 1. Busca o item na Wishlist
+            var wishlistItem = await _context.WishLists
+                .FirstOrDefaultAsync(w => w.UserId == userId && w.MovieId == movie.Id);
+
+            if (wishlistItem == null)
+                return false;
+
+            // 2. Remove da Wishlist
+            _context.WishLists.Remove(wishlistItem);
+
+            // 3. Evita duplicatas na tabela Watched
+            var alreadyWatched = await _context.WatchedLists
+                .AnyAsync(w => w.UserId == userId && w.MovieId == movie.Id);
+
+            if (!alreadyWatched)
+            {
+                _context.WatchedLists.Add(new WatchedList
+                {
+                    UserId = userId,
+                    MovieId = movie.Id,
+                });
+            }
+
+            // 4. Salva as alterações
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
+
         #endregion
         public async Task<List<MovieDetailsDTO>> GetRecommendedMovies(string id)
         {
@@ -228,7 +298,7 @@ namespace LumeServer.Services
                         SpokenLanguages = m.MovieSpokenLanguages.Select(msl => msl.SpokenLanguage.Name).ToList()
                     })
                     .OrderBy(x => Guid.NewGuid())
-                    .Take(12)
+                    .Take(5)
                     .ToListAsync();
 
             usedMovieIds.UnionWith(dailyThemeExtraMovies.Select(m => m.Id));
@@ -560,189 +630,193 @@ namespace LumeServer.Services
             usedMovieIds.UnionWith(randomMovies.Select(m => m.Id));
 
             var extraMovies = new List<MovieDetailsDTO>();
-            if (usedMovieIds.Count < 25)
-            {
-                var moreDailyThemeExtraMovies = await
-                _context
-                    .Movies
-                    .Include(m => m.MovieProductionCountries)
-                        .ThenInclude(mpc => mpc.ProductionCountry)
-                    .Include(m => m.MovieSpokenLanguages)
-                        .ThenInclude(mpc => mpc.SpokenLanguage)
-                    .Include(m => m.MovieProductionCompanies)
-                        .ThenInclude(mpc => mpc.ProductionCompany)
-                    .Where(m =>
-                        !usedMovieIds.Contains(m.Id) &&
-                        !_context.WishLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
-                        !_context.WatchedLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
-                        dailyClusterIds.Contains(m.ClusterId) &&
-                        m.VoteAverage > dailyExtraParameters.MinVoteAverage &&
-                        m.VoteAverage < dailyExtraParameters.MaxVoteAverage &&
-                        m.VoteCount > dailyExtraParameters.MinVoteCount &&
-                        m.VoteCount < dailyExtraParameters.MaxVoteCount &&
-                        m.ReleaseDate.Value.Year > dailyExtraParameters.MinYear &&
-                        m.ReleaseDate.Value.Year < dailyExtraParameters.MaxYear &&
-                        m.Runtime > dailyExtraParameters.MinDuration &&
-                        m.Runtime < dailyExtraParameters.MaxDuration &&
-                        m.MovieProductionCountries.Any(mpc => dailyExtraParameters.ProductionCountryIds.Contains(mpc.ProductionCountryId) &&
-                        m.MovieSpokenLanguages.Any(mpc => dailyExtraParameters.SpokenLanguageIds.Contains(mpc.SpokenLanguageId))
-                        ))
-                    .Select(m => new MovieDetailsDTO
-                    {
-                        Id = m.Id,
-                        Title = m.Title,
-                        VoteAverage = m.VoteAverage,
-                        VoteCount = m.VoteCount,
-                        Status = m.Status,
-                        ReleaseDate = m.ReleaseDate,
-                        Revenue = m.Revenue,
-                        Runtime = m.Runtime,
-                        Adult = m.Adult,
-                        BackdropPath = m.BackdropPath,
-                        Budget = m.Budget,
-                        Homepage = m.Homepage,
-                        ImdbId = m.ImdbId,
-                        OriginalLanguage = m.OriginalLanguage,
-                        OriginalTitle = m.OriginalTitle,
-                        Overview = m.Overview,
-                        Popularity = m.Popularity,
-                        PosterPath = m.PosterPath,
-                        Tagline = m.Tagline,
-                        Genres = m.MovieGenres.Select(mg => mg.Genre.Name).ToList(),
-                        Keywords = m.MovieKeywords.Select(mk => mk.Keyword.Name).ToList(),
-                        ProductionCompanies = m.MovieProductionCompanies.Select(mpc => mpc.ProductionCompany.Name).ToList(),
-                        ProductionCountries = m.MovieProductionCountries.Select(mpc => mpc.ProductionCountry.Name).ToList(),
-                        SpokenLanguages = m.MovieSpokenLanguages.Select(msl => msl.SpokenLanguage.Name).ToList()
-                    })
-                    .OrderBy(x => Guid.NewGuid())
-                    .Take(5)
-                    .ToListAsync();
+            //if (usedMovieIds.Count < 25)
+            //{
+            //    var moreDailyThemeExtraMovies = await
+            //    _context
+            //        .Movies
+            //        .Include(m => m.MovieProductionCountries)
+            //            .ThenInclude(mpc => mpc.ProductionCountry)
+            //        .Include(m => m.MovieSpokenLanguages)
+            //            .ThenInclude(mpc => mpc.SpokenLanguage)
+            //        .Include(m => m.MovieProductionCompanies)
+            //            .ThenInclude(mpc => mpc.ProductionCompany)
+            //        .Where(m =>
+            //            !usedMovieIds.Contains(m.Id) &&
+            //            !_context.WishLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
+            //            !_context.WatchedLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
+            //            dailyClusterIds.Contains(m.ClusterId) &&
+            //            m.VoteAverage > dailyExtraParameters.MinVoteAverage &&
+            //            m.VoteAverage < dailyExtraParameters.MaxVoteAverage &&
+            //            m.VoteCount > dailyExtraParameters.MinVoteCount &&
+            //            m.VoteCount < dailyExtraParameters.MaxVoteCount &&
+            //            m.ReleaseDate.Value.Year > dailyExtraParameters.MinYear &&
+            //            m.ReleaseDate.Value.Year < dailyExtraParameters.MaxYear &&
+            //            m.Runtime > dailyExtraParameters.MinDuration &&
+            //            m.Runtime < dailyExtraParameters.MaxDuration &&
+            //            m.MovieProductionCountries.Any(mpc => dailyExtraParameters.ProductionCountryIds.Contains(mpc.ProductionCountryId) &&
+            //            m.MovieSpokenLanguages.Any(mpc => dailyExtraParameters.SpokenLanguageIds.Contains(mpc.SpokenLanguageId))
+            //            ))
+            //        .Select(m => new MovieDetailsDTO
+            //        {
+            //            Id = m.Id,
+            //            Title = m.Title,
+            //            VoteAverage = m.VoteAverage,
+            //            VoteCount = m.VoteCount,
+            //            Status = m.Status,
+            //            ReleaseDate = m.ReleaseDate,
+            //            Revenue = m.Revenue,
+            //            Runtime = m.Runtime,
+            //            Adult = m.Adult,
+            //            BackdropPath = m.BackdropPath,
+            //            Budget = m.Budget,
+            //            Homepage = m.Homepage,
+            //            ImdbId = m.ImdbId,
+            //            OriginalLanguage = m.OriginalLanguage,
+            //            OriginalTitle = m.OriginalTitle,
+            //            Overview = m.Overview,
+            //            Popularity = m.Popularity,
+            //            PosterPath = m.PosterPath,
+            //            Tagline = m.Tagline,
+            //            Genres = m.MovieGenres.Select(mg => mg.Genre.Name).ToList(),
+            //            Keywords = m.MovieKeywords.Select(mk => mk.Keyword.Name).ToList(),
+            //            ProductionCompanies = m.MovieProductionCompanies.Select(mpc => mpc.ProductionCompany.Name).ToList(),
+            //            ProductionCountries = m.MovieProductionCountries.Select(mpc => mpc.ProductionCountry.Name).ToList(),
+            //            SpokenLanguages = m.MovieSpokenLanguages.Select(msl => msl.SpokenLanguage.Name).ToList()
+            //        })
+            //        .OrderBy(x => Guid.NewGuid())
+            //        .Take(5)
+            //        .ToListAsync();
 
-                usedMovieIds.UnionWith(moreDailyThemeExtraMovies.Select(m => m.Id));
+            //    usedMovieIds.UnionWith(moreDailyThemeExtraMovies.Select(m => m.Id));
 
-                var moreDailyThemeMovies = await
-                _context
-                    .Movies
-                    .Include(m => m.MovieProductionCountries)
-                        .ThenInclude(mpc => mpc.ProductionCountry)
-                    .Include(m => m.MovieSpokenLanguages)
-                        .ThenInclude(mpc => mpc.SpokenLanguage)
-                    .Include(m => m.MovieProductionCompanies)
-                        .ThenInclude(mpc => mpc.ProductionCompany)
-                    .Where(m =>
-                        !usedMovieIds.Contains(m.Id) &&
-                        !_context.WishLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
-                        !_context.WatchedLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
-                        dailyClusterIds.Contains(m.ClusterId)
-                        )
-                    .Select(m => new MovieDetailsDTO
-                    {
-                        Id = m.Id,
-                        Title = m.Title,
-                        VoteAverage = m.VoteAverage,
-                        VoteCount = m.VoteCount,
-                        Status = m.Status,
-                        ReleaseDate = m.ReleaseDate,
-                        Revenue = m.Revenue,
-                        Runtime = m.Runtime,
-                        Adult = m.Adult,
-                        BackdropPath = m.BackdropPath,
-                        Budget = m.Budget,
-                        Homepage = m.Homepage,
-                        ImdbId = m.ImdbId,
-                        OriginalLanguage = m.OriginalLanguage,
-                        OriginalTitle = m.OriginalTitle,
-                        Overview = m.Overview,
-                        Popularity = m.Popularity,
-                        PosterPath = m.PosterPath,
-                        Tagline = m.Tagline,
-                        Genres = m.MovieGenres.Select(mg => mg.Genre.Name).ToList(),
-                        Keywords = m.MovieKeywords.Select(mk => mk.Keyword.Name).ToList(),
-                        ProductionCompanies = m.MovieProductionCompanies.Select(mpc => mpc.ProductionCompany.Name).ToList(),
-                        ProductionCountries = m.MovieProductionCountries.Select(mpc => mpc.ProductionCountry.Name).ToList(),
-                        SpokenLanguages = m.MovieSpokenLanguages.Select(msl => msl.SpokenLanguage.Name).ToList()
-                    })
-                    .OrderBy(x => Guid.NewGuid())
-                    .Take(5)
-                    .ToListAsync();
+            //    var moreDailyThemeMovies = await
+            //    _context
+            //        .Movies
+            //        .Include(m => m.MovieProductionCountries)
+            //            .ThenInclude(mpc => mpc.ProductionCountry)
+            //        .Include(m => m.MovieSpokenLanguages)
+            //            .ThenInclude(mpc => mpc.SpokenLanguage)
+            //        .Include(m => m.MovieProductionCompanies)
+            //            .ThenInclude(mpc => mpc.ProductionCompany)
+            //        .Where(m =>
+            //            !usedMovieIds.Contains(m.Id) &&
+            //            !_context.WishLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
+            //            !_context.WatchedLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
+            //            dailyClusterIds.Contains(m.ClusterId)
+            //            )
+            //        .Select(m => new MovieDetailsDTO
+            //        {
+            //            Id = m.Id,
+            //            Title = m.Title,
+            //            VoteAverage = m.VoteAverage,
+            //            VoteCount = m.VoteCount,
+            //            Status = m.Status,
+            //            ReleaseDate = m.ReleaseDate,
+            //            Revenue = m.Revenue,
+            //            Runtime = m.Runtime,
+            //            Adult = m.Adult,
+            //            BackdropPath = m.BackdropPath,
+            //            Budget = m.Budget,
+            //            Homepage = m.Homepage,
+            //            ImdbId = m.ImdbId,
+            //            OriginalLanguage = m.OriginalLanguage,
+            //            OriginalTitle = m.OriginalTitle,
+            //            Overview = m.Overview,
+            //            Popularity = m.Popularity,
+            //            PosterPath = m.PosterPath,
+            //            Tagline = m.Tagline,
+            //            Genres = m.MovieGenres.Select(mg => mg.Genre.Name).ToList(),
+            //            Keywords = m.MovieKeywords.Select(mk => mk.Keyword.Name).ToList(),
+            //            ProductionCompanies = m.MovieProductionCompanies.Select(mpc => mpc.ProductionCompany.Name).ToList(),
+            //            ProductionCountries = m.MovieProductionCountries.Select(mpc => mpc.ProductionCountry.Name).ToList(),
+            //            SpokenLanguages = m.MovieSpokenLanguages.Select(msl => msl.SpokenLanguage.Name).ToList()
+            //        })
+            //        .OrderBy(x => Guid.NewGuid())
+            //        .Take(5)
+            //        .ToListAsync();
 
-                usedMovieIds.UnionWith(moreDailyThemeMovies.Select(m => m.Id));
+            //    usedMovieIds.UnionWith(moreDailyThemeMovies.Select(m => m.Id));
 
-                var moreDailyExtraMovies = await
-                _context
-                    .Movies
-                    .Include(m => m.MovieProductionCountries)
-                        .ThenInclude(mpc => mpc.ProductionCountry)
-                    .Include(m => m.MovieSpokenLanguages)
-                        .ThenInclude(mpc => mpc.SpokenLanguage)
-                    .Include(m => m.MovieProductionCompanies)
-                        .ThenInclude(mpc => mpc.ProductionCompany)
-                    .Where(m =>
-                        !usedMovieIds.Contains(m.Id) &&
-                        !_context.WishLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
-                        !_context.WatchedLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
-                        m.VoteAverage > dailyExtraParameters.MinVoteAverage &&
-                        m.VoteAverage < dailyExtraParameters.MaxVoteAverage &&
-                        m.VoteCount > dailyExtraParameters.MinVoteCount &&
-                        m.VoteCount < dailyExtraParameters.MaxVoteCount &&
-                        m.ReleaseDate.Value.Year > dailyExtraParameters.MinYear &&
-                        m.ReleaseDate.Value.Year < dailyExtraParameters.MaxYear &&
-                        m.Runtime > dailyExtraParameters.MinDuration &&
-                        m.Runtime < dailyExtraParameters.MaxDuration &&
-                        m.MovieProductionCountries.Any(mpc => dailyExtraParameters.ProductionCountryIds.Contains(mpc.ProductionCountryId) &&
-                        m.MovieSpokenLanguages.Any(mpc => dailyExtraParameters.SpokenLanguageIds.Contains(mpc.SpokenLanguageId))
-                        ))
-                    .Select(m => new MovieDetailsDTO
-                    {
-                        Id = m.Id,
-                        Title = m.Title,
-                        VoteAverage = m.VoteAverage,
-                        VoteCount = m.VoteCount,
-                        Status = m.Status,
-                        ReleaseDate = m.ReleaseDate,
-                        Revenue = m.Revenue,
-                        Runtime = m.Runtime,
-                        Adult = m.Adult,
-                        BackdropPath = m.BackdropPath,
-                        Budget = m.Budget,
-                        Homepage = m.Homepage,
-                        ImdbId = m.ImdbId,
-                        OriginalLanguage = m.OriginalLanguage,
-                        OriginalTitle = m.OriginalTitle,
-                        Overview = m.Overview,
-                        Popularity = m.Popularity,
-                        PosterPath = m.PosterPath,
-                        Tagline = m.Tagline,
-                        Genres = m.MovieGenres.Select(mg => mg.Genre.Name).ToList(),
-                        Keywords = m.MovieKeywords.Select(mk => mk.Keyword.Name).ToList(),
-                        ProductionCompanies = m.MovieProductionCompanies.Select(mpc => mpc.ProductionCompany.Name).ToList(),
-                        ProductionCountries = m.MovieProductionCountries.Select(mpc => mpc.ProductionCountry.Name).ToList(),
-                        SpokenLanguages = m.MovieSpokenLanguages.Select(msl => msl.SpokenLanguage.Name).ToList()
-                    })
-                    .OrderBy(x => Guid.NewGuid())
-                    .Take(5)
-                    .ToListAsync();
+            //    var moreDailyExtraMovies = await
+            //    _context
+            //        .Movies
+            //        .Include(m => m.MovieProductionCountries)
+            //            .ThenInclude(mpc => mpc.ProductionCountry)
+            //        .Include(m => m.MovieSpokenLanguages)
+            //            .ThenInclude(mpc => mpc.SpokenLanguage)
+            //        .Include(m => m.MovieProductionCompanies)
+            //            .ThenInclude(mpc => mpc.ProductionCompany)
+            //        .Where(m =>
+            //            !usedMovieIds.Contains(m.Id) &&
+            //            !_context.WishLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
+            //            !_context.WatchedLists.Any(w => w.UserId == id && w.MovieId == m.Id) &&
+            //            m.VoteAverage > dailyExtraParameters.MinVoteAverage &&
+            //            m.VoteAverage < dailyExtraParameters.MaxVoteAverage &&
+            //            m.VoteCount > dailyExtraParameters.MinVoteCount &&
+            //            m.VoteCount < dailyExtraParameters.MaxVoteCount &&
+            //            m.ReleaseDate.Value.Year > dailyExtraParameters.MinYear &&
+            //            m.ReleaseDate.Value.Year < dailyExtraParameters.MaxYear &&
+            //            m.Runtime > dailyExtraParameters.MinDuration &&
+            //            m.Runtime < dailyExtraParameters.MaxDuration &&
+            //            m.MovieProductionCountries.Any(mpc => dailyExtraParameters.ProductionCountryIds.Contains(mpc.ProductionCountryId) &&
+            //            m.MovieSpokenLanguages.Any(mpc => dailyExtraParameters.SpokenLanguageIds.Contains(mpc.SpokenLanguageId))
+            //            ))
+            //        .Select(m => new MovieDetailsDTO
+            //        {
+            //            Id = m.Id,
+            //            Title = m.Title,
+            //            VoteAverage = m.VoteAverage,
+            //            VoteCount = m.VoteCount,
+            //            Status = m.Status,
+            //            ReleaseDate = m.ReleaseDate,
+            //            Revenue = m.Revenue,
+            //            Runtime = m.Runtime,
+            //            Adult = m.Adult,
+            //            BackdropPath = m.BackdropPath,
+            //            Budget = m.Budget,
+            //            Homepage = m.Homepage,
+            //            ImdbId = m.ImdbId,
+            //            OriginalLanguage = m.OriginalLanguage,
+            //            OriginalTitle = m.OriginalTitle,
+            //            Overview = m.Overview,
+            //            Popularity = m.Popularity,
+            //            PosterPath = m.PosterPath,
+            //            Tagline = m.Tagline,
+            //            Genres = m.MovieGenres.Select(mg => mg.Genre.Name).ToList(),
+            //            Keywords = m.MovieKeywords.Select(mk => mk.Keyword.Name).ToList(),
+            //            ProductionCompanies = m.MovieProductionCompanies.Select(mpc => mpc.ProductionCompany.Name).ToList(),
+            //            ProductionCountries = m.MovieProductionCountries.Select(mpc => mpc.ProductionCountry.Name).ToList(),
+            //            SpokenLanguages = m.MovieSpokenLanguages.Select(msl => msl.SpokenLanguage.Name).ToList()
+            //        })
+            //        .OrderBy(x => Guid.NewGuid())
+            //        .Take(5)
+            //        .ToListAsync();
 
-                usedMovieIds.UnionWith(moreDailyExtraMovies.Select(m => m.Id));
+            //    usedMovieIds.UnionWith(moreDailyExtraMovies.Select(m => m.Id));
 
-                extraMovies = moreDailyThemeExtraMovies
-                    .Concat(moreDailyThemeMovies)
-                    .Concat(moreDailyExtraMovies)
-                    .DistinctBy(m => m.Id)
-                    .ToList();
-            }
+            //    extraMovies = moreDailyThemeExtraMovies
+            //        .Concat(moreDailyThemeMovies)
+            //        .Concat(moreDailyExtraMovies)
+            //        .DistinctBy(m => m.Id)
+            //        .ToList();
+            //}
 
-            var recommendedMovies = generalThemeExtraMovies
-                .Concat(generalThemeMovies)
-                .Concat(generalExtraMovies)
-                .Concat(randomMovies)
-                .Concat(dailyThemeExtraMovies)
-                .Concat(dailyThemeMovies)
-                .Concat(dailyExtraMovies)
-                .Concat(extraMovies)
-                .DistinctBy(m => m.Id)
-                .OrderBy(x => Guid.NewGuid())
-                .ToList();
+
+            // Para apresentar
+            var recommendedMovies = dailyThemeExtraMovies;
+
+            //var recommendedMovies = generalThemeExtraMovies
+            //    .Concat(generalThemeMovies)
+            //    .Concat(generalExtraMovies)
+            //    .Concat(randomMovies)
+            //    .Concat(dailyThemeExtraMovies)
+            //    .Concat(dailyThemeMovies)
+            //    .Concat(dailyExtraMovies)
+            //    .Concat(extraMovies)
+            //    .DistinctBy(m => m.Id)
+            //    .OrderBy(x => Guid.NewGuid())
+            //    .ToList();
 
             return recommendedMovies;
 

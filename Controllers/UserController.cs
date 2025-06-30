@@ -49,6 +49,19 @@ namespace LumeServer.Controllers
             });
         }
 
+        [Authorize]
+        [HttpGet("{id}/do-i-have-recommendations")]
+        public async Task<IActionResult> GetDoIHaveRecommendations([FromRoute] string id)
+        {
+            bool doIHaveRecommendations = await _service.DoIHaveRecommendations(id);
+
+            if (!doIHaveRecommendations)
+                return Ok(false);
+
+            return Ok(true);
+        }
+
+
         [HttpPost("logout")]
         [Authorize]
         public async Task<IActionResult> Logout()

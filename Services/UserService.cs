@@ -118,6 +118,21 @@ namespace LumeServer.Services
             return true;
         }
 
+        public async Task<bool> DoIHaveRecommendations(string id)
+        {
+            var user = await _context.Users.FindAsync(id);
+
+            if (user == null)
+                return false;
+
+            var hasWishlist = await _context.Users
+                .Where(u => u.Id == id)
+                .Include(u => u.WishList)
+                .AnyAsync(u => u.WishList.Any());
+
+            return hasWishlist;
+        }
+
         // Delete Accounts
         public async Task<bool> DeleteAccountAsync(ClaimsPrincipal userPrincipal)
         {
